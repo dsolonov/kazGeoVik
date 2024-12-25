@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Яндекс Панорама - Игра</title>
+    <script src="https://api-maps.yandex.ru/2.1/?apikey=2bc4db1f-55d0-4cfe-bb41-e925007c5578&lang=ru_RU"></script>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+        }
+        #panorama {
+            width: 100%;
+            height: 100%;
+        }
+        #miniMap {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 200px;
+            height: 150px;
+            border: 2px solid #ccc;
+            z-index: 10;
+            transition: all 0.3s ease;
+        }
+        #miniMap.expanded {
+            width: 50vw;
+            height: 50vh;
+        }
+        #guessButton, #nextRoundButton {
+            position: absolute;
+            padding: 20px 55px; /* Увеличены */
+            font-size: 32px; /* Увеличен шрифт */
+            color: white;
+            border: none;
+            cursor: pointer;
+            z-index: 20;
+        }
+        #guessButton {
+            top: 10px;
+            left: 15px;
+            background-color: #4CAF50;
+            display: none; /* Скрываем кнопку изначально */
+        }
+        #nextRoundButton {
+            top: 100px; /* Смещено вниз из-за увеличения */
+            left: 10px;
+            background-color: #2196F3;
+            display: none;
+        }
+        #result {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 20px; /* Увеличено */
+            background: rgba(255, 255, 255, 0.9);
+            font-size: 32px; /* Увеличен шрифт */
+            font-weight: bold; /* Более заметный текст */
+            border: 1px solid #ccc;
+            z-index: 20;
+        }
+    </style>
+</head>
+<body>
+<div id="panorama"></div>
+<div id="miniMap"></div>
+<button id="guessButton">Угадай</button>
+<button id="nextRoundButton">Следующий раунд</button>
+<div id="result"></div>
+
+<div id="finalMessage" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border: 2px solid black; font-size: 36px; font-weight: bold; text-align: center; z-index: 1000;"></div>
+
+<script>
+    ymaps.ready(() => {
+        let locations = [];
+        let currentRound = 0;
+        let panoramaCoords;
+        let panoramaPlayer = null;
+        let playerMarker, panoramaMarker, line;
+        let totalScore = 0;
+
+        function loadLocations() {
+            const url = `locations.txt?nocache=${Date.now()}`;
+            return fetch(url)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Не удалось загрузить файл с координатами');
+                    }
+                    return response.text();
+                })
+                .then(data => {
+                    return data.trim().split('\n').map(line => {
+                        const [lat, lon] = line.split(',').map(Number);
+                        return [lat, lon];
+                    });
+                });
+        }
+
+        function startRound() {
+            if (currentRound >= locations.length) {
+                const finalMessage = document.getElementById('finalMessage');
+                finalMessage.textContent = `Игра завершена! Ваш общий счёт: ${totalScore} баллов. Спасибо за игру!`;
+                finalMessage.style.display = 'block';
+                return;
+            }
+
+            panoramaCoords = locations[currentRound];
+            loadPanorama(panoramaCoords);
+            currentRound++;
+        }
+
+        function loadPanorama(coords) {
+            if (panoramaPlayer) {
+                panoramaPlayer.destroy();
+            }
+            ymaps.panorama.locate(coords).then((panoramas) => {
+                if (panoramas.length > 0) {
+                    panoramaPlayer = new ymaps.panorama.Player('panorama', panoramas[0], { controls: [] });
+                } else {
+                    alert('Панорамы для указанных координат не найдены.');
+                }
+            }).catch(error => {
+                console.error('Ошибка при загрузке панорамы:', error);
+            });
+        }
+
+        const miniMapContainer = document.getElementById('miniMap');
+        const miniMap = new ymaps.Map('miniMap', {
+            center: [48, 68],
+            zoom: 5,
+            controls: ['zoomControl']
+        });
+
+        const KAZAKHSTAN_BORDER_URL = './kazakhstan_border.json';
+
+        fetch(KAZAKHSTAN_BORDER_URL)
+            .then(response => response.json())
+            .then(geoJsonData => {
+                const kazakhstanBorder = new ymaps.GeoObject({
+                    geometry: {
+                        type: "Polygon",
+                        coordinates: geoJsonData.features[0].geometry.coordinates,
+                        fillRule: "nonZero"
+                    },
+                    properties: {
+                        hintContent: "Казахстан"
+                    }
+                }, {
+                    strokeColor: "#008000",
+                    strokeWidth: 3,
+                    fillColor: 'rgba(0,0,0,0)',
+                    interactivityModel: 'default#transparent'
+                });
+
+                miniMap.geoObjects.add(kazakhstanBorder);
+                miniMap.container.fitToViewport();
+            })
+            .catch(error => console.error("Ошибка загрузки границы Казахстана:", error));
+
+        miniMapContainer.addEventListener('mouseenter', () => {
+            miniMapContainer.classList.add('expanded');
+            setTimeout(() => miniMap.container.fitToViewport(), 300);
+        });
+
+        miniMapContainer.addEventListener('mouseleave', () => {
+            miniMapContainer.classList.remove('expanded');
+            setTimeout(() => miniMap.container.fitToViewport(), 300);
+        });
+
+        miniMap.events.add('click', (event) => {
+            const coords = event.get('coords');
+            if (playerMarker) {
+                playerMarker.geometry.setCoordinates(coords);
+            } else {
+                playerMarker = new ymaps.Placemark(coords, {}, { preset: 'islands#redIcon' });
+                miniMap.geoObjects.add(playerMarker);
+                // Показываем кнопку "Угадай" после установки маркера
+                document.getElementById('guessButton').style.display = 'block';
+            }
+        });
+
+        document.getElementById('guessButton').addEventListener('click', () => {
+            // Скрываем кнопку "Угадай" после нажатия
+            document.getElementById('guessButton').style.display = 'none';
+
+            const playerCoords = playerMarker.geometry.getCoordinates();
+            const distance = ymaps.coordSystem.geo.getDistance(playerCoords, panoramaCoords);
+
+            if (!panoramaMarker) {
+                panoramaMarker = new ymaps.Placemark(panoramaCoords, {}, { preset: 'islands#greenIcon' });
+                miniMap.geoObjects.add(panoramaMarker);
+            }
+
+            if (line) {
+                line.geometry.setCoordinates([playerCoords, panoramaCoords]);
+            } else {
+                line = new ymaps.Polyline([playerCoords, panoramaCoords], {}, { strokeColor: '#0000FF', strokeWidth: 3 });
+                miniMap.geoObjects.add(line);
+            }
+
+            let roundScore = 0;
+            if (distance < 1000) {
+                roundScore = 10;
+            } else if (distance >= 1000 && distance < 5000) {
+                roundScore = 5;
+            } else if (distance >= 5000 && distance < 20000) {
+                roundScore = 3;
+            } else {
+                roundScore = 0;
+            }
+            totalScore += roundScore;
+
+            const resultElement = document.getElementById('result');
+            resultElement.textContent = `Расстояние: ${Math.round(distance)} м. Очки за раунд: ${roundScore}. Общий счёт: ${totalScore}.`;
+
+            document.getElementById('nextRoundButton').style.display = 'block';
+        });
+
+        document.getElementById('nextRoundButton').addEventListener('click', () => {
+            if (playerMarker) {
+                miniMap.geoObjects.remove(playerMarker);
+                playerMarker = null;
+            }
+            if (panoramaMarker) {
+                miniMap.geoObjects.remove(panoramaMarker);
+                panoramaMarker = null;
+            }
+            if (line) {
+                miniMap.geoObjects.remove(line);
+                line = null;
+            }
+
+            startRound();
+            document.getElementById('nextRoundButton').style.display = 'none';
+            document.getElementById('result').textContent = '';
+        });
+
+        loadLocations().then(data => {
+            locations = data;
+            startRound();
+        }).catch(error => console.error(error));
+    });
+</script>
+</body>
+</html>
