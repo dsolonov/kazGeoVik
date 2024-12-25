@@ -1,0 +1,2 @@
+# kazGeoVik
+kazGeoVik
