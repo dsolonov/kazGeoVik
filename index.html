@@ -115,6 +115,26 @@
             font-weight: bold;
             z-index: 20;
         }
+        #ratingTableContainer {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 20px;
+            border: 2px solid black;
+            z-index: 30;
+            display: none; /* Скрываем таблицу изначально */
+        }
+        #ratingTable {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        #ratingTable th, #ratingTable td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+        }
     </style>
 </head>
 <body>
@@ -135,6 +155,7 @@
     <button id="startButton" disabled>Начать</button>
 </div>
 <div id="timer"></div>
+<div id="ratingTableContainer"></div>
 
 <script>
     ymaps.ready(() => {
@@ -291,6 +312,53 @@
                 document.getElementById('guessButton').style.display = 'block';
             }
         });
+        
+        function fetchRatingData() {
+            const scriptURL = 'YOUR_GOOGLE_APPS_SCRIPT_URL'; // Замените на URL вашего веб-приложения
+            fetch(scriptURL)
+                .then(response => response.json())
+                .then(data => displayRatingTable(data))
+                .catch(error => console.error('Ошибка при загрузке рейтинга:', error));
+        }
+
+        function displayRatingTable(data) {
+            const tableContainer = document.getElementById('ratingTableContainer');
+            tableContainer.innerHTML = '';
+
+            if (data.length === 0) {
+                tableContainer.innerHTML = '<p>Рейтинг пока пуст.</p>';
+                tableContainer.style.display = 'block';
+                return;
+            }
+
+            const table = document.createElement('table');
+            table.id = 'ratingTable';
+
+            
+            const headerRow = table.insertRow();
+            const headers = data[0];
+            headers.forEach(headerText => {
+                const header = document.createElement('th');
+                header.textContent = headerText;
+                headerRow.appendChild(header);
+            });
+
+            
+            for (let i = 1; i < data.length; i++) {
+                const row = table.insertRow();
+                data[i].forEach(cellData => {
+                    const cell = row.insertCell();
+                    cell.textContent = cellData;
+                });
+            }
+
+            tableContainer.appendChild(table);
+            tableContainer.style.display = 'block';
+        }
+
+        function hideRatingTable() {
+            document.getElementById('ratingTableContainer').style.display = 'none';
+        }
 
         document.getElementById('guessButton').addEventListener('click', () => {
             const playerName = Object.keys(players)[0]; 
@@ -319,7 +387,7 @@
     
                 const resultElement = document.getElementById('result');
                 resultElement.innerHTML = `Игрок: ${playerName}<br>Расстояние: ${Math.round(distance)} м.<br>Очки за раунд: ${roundScore}.<br>Общий счёт: ${players[playerName].score}.<br>Время: ${players[playerName].guessTime.toFixed(1)} сек`;
-    
+                fetchRatingData();
                 document.getElementById('nextRoundButton').style.display = 'block';
             }
         });
@@ -354,6 +422,7 @@
             document.getElementById('nextRoundButton').style.display = 'none';
             document.getElementById('result').textContent = '';
             document.getElementById('guessButton').style.display = 'block';
+            hideRatingTable();
         });
 
         function updateTimer() {
@@ -370,9 +439,9 @@
                     
                     Object.keys(players).forEach(playerName => {
                         if (!players[playerName].finished) {
-                            players[playerName].score += 0; // Add 0 points if the player didn't guess
+                            players[playerName].score += 0; 
                             players[playerName].finished = true;
-                            players[playerName].guessTime = roundDuration; // Set time to max if they didn't finish
+                            players[playerName].guessTime = roundDuration; 
                         }
                     });
                     
@@ -407,26 +476,27 @@
             finalMessage.style.display = 'block';
 
             saveResults(results);
+            fetchRatingData();
         }
 
         function saveResults(results) {
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbyxzp3VfKHj1wFaJtAJztEXorywzAb0aBlbOLGKDKWvtmfBJEsVZ2-u2VRje6OaYGGA/exec'; // Вставьте URL вашего веб-приложения
+            const scriptURL = 'https://script.google.com/macros/s/AKfycbzEzlcEUPTNksmHhmzahMT7wGwmWfVAlEBb-cVRcv5bai_KY_zO896YM7BzRy9fTobB/exec'; // Замените на URL вашего веб-приложения
 
-    results.forEach(player => {
-        const formData = new FormData();
-        formData.append('name', player.name);
-        formData.append('score', player.score);
-        formData.append('time', player.time);
+            results.forEach(player => {
+                const formData = new FormData();
+                formData.append('name', player.name);
+                formData.append('score', player.score);
+                formData.append('time', player.time);
 
-        fetch(scriptURL, {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => response.text())
-        .then(data => console.log('Результаты игрока ' + player.name + ' сохранены:', data))
-        .catch(error => console.error('Ошибка:', error));
-    });
-}
+                fetch(scriptURL, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.text())
+                .then(data => console.log('Результаты игрока ' + player.name + ' сохранены:', data))
+                .catch(error => console.error('Ошибка:', error));
+            });
+        }
     });
 </script>
 </body>
