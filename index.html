@@ -5,7 +5,6 @@
     <title>Многопользовательская Игра</title>
     <script src="https://api-maps.yandex.ru/2.1/?apikey=2bc4db1f-55d0-4cfe-bb41-e925007c5578&lang=ru_RU"></script>
     <style>
-        /* Стили из оригинального проекта */
         html, body {
             margin: 0;
             padding: 0;
@@ -16,16 +15,55 @@
             width: 100%;
             height: 100%;
         }
-        /* ... остальные стили остаются */
-        #playerList {
+        #miniMapContainer {
             position: absolute;
             top: 10px;
+            right: 10px;
+            width: 200px;
+            height: 150px;
+            border: 2px solid #ccc;
+            z-index: 10;
+            transition: all 0.3s ease;
+        }
+        #miniMap {
+            width: 100%;
+            height: 100%;
+        }
+        #miniMapContainer.expanded {
+            width: 100vw;
+            height: 50vh;
+        }
+        #miniMapButton {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 10px;
+            font-size: 25px;
+            z-index: 20;
+        }
+        #guessButton {
+            position: absolute;
+            padding: 20px 55px;
+            font-size: 32px;
+            color: white;
+            border: none;
+            cursor: pointer;
+            background-color: #4CAF50;
+            top: 10px;
+            left: 15px;
+            z-index: 20;
+        }
+        #result {
+            position: absolute;
+            bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
+            padding: 20px;
             background: rgba(255, 255, 255, 0.9);
-            padding: 10px;
+            font-size: 32px;
+            font-weight: bold;
             border: 1px solid #ccc;
-            z-index: 100;
+            z-index: 20;
         }
         #timer {
             position: absolute;
@@ -36,6 +74,30 @@
             font-size: 20px;
             font-weight: bold;
             z-index: 100;
+        }
+        #playerList {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px;
+            border: 1px solid #ccc;
+            z-index: 100;
+        }
+        #finalMessage {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 20px;
+            border: 2px solid black;
+            font-size: 36px;
+            font-weight: bold;
+            text-align: center;
+            z-index: 1000;
         }
     </style>
 </head>
@@ -48,13 +110,12 @@
 <div id="timer">Время: 07:00</div>
 <button id="miniMapButton">Карта</button>
 <button id="guessButton">Угадай</button>
-<button id="nextRoundButton">Следующий раунд</button>
 <div id="result"></div>
 <div id="finalMessage"></div>
 
 <script>
     const players = []; // Список игроков
-    let currentPlayerIndex = 0; // Текущий игрок
+    const playerGuesses = {}; // Угаданные координаты игроков
     let roundTimer; // Таймер раунда
 
     ymaps.ready(() => {
@@ -62,7 +123,7 @@
         let currentRound = 0;
         let panoramaCoords;
         let panoramaPlayer = null;
-        let playerMarker, panoramaMarker, line;
+        let allPlayersGuessed = false;
 
         function loadLocations() {
             const url = `locations.txt?nocache=${Date.now()}`;
@@ -98,25 +159,17 @@
 
                 if (time <= 0) {
                     clearInterval(roundTimer);
-                    nextPlayer();
+                    endRound();
                 }
 
                 time--;
             }, 1000);
         }
 
-        function nextPlayer() {
-            currentPlayerIndex++;
-            if (currentPlayerIndex >= players.length) {
-                startRound();
-            } else {
-                alert(`Ход игрока ${players[currentPlayerIndex].name}`);
-                startTimer(420); // 7 минут
-            }
-        }
-
         function startRound() {
-            currentPlayerIndex = 0;
+            allPlayersGuessed = false;
+            playerGuesses = {};
+
             if (currentRound >= locations.length) {
                 clearInterval(roundTimer);
                 const finalMessage = document.getElementById('finalMessage');
@@ -130,7 +183,7 @@
             loadPanorama(panoramaCoords);
             currentRound++;
 
-            alert(`Раунд ${currentRound}. Ход игрока ${players[currentPlayerIndex].name}`);
+            alert(`Раунд ${currentRound} начался!`);
             startTimer(420); // 7 минут
         }
 
@@ -154,23 +207,49 @@
         }
 
         document.getElementById('guessButton').addEventListener('click', () => {
-            const player = players[currentPlayerIndex];
-            const playerCoords = playerMarker.geometry.getCoordinates();
-            const distance = ymaps.coordSystem.geo.getDistance(playerCoords, panoramaCoords);
-
-            let roundScore = 0;
-            if (distance < 1000) {
-                roundScore = 10;
-            } else if (distance >= 1000 && distance < 5000) {
-                roundScore = 5;
-            } else if (distance >= 5000 && distance < 20000) {
-                roundScore = 3;
+            const playerName = prompt('Введите ваше имя для угадывания:');
+            const player = players.find(p => p.name === playerName);
+            if (!player) {
+                alert('Игрок с таким именем не найден!');
+                return;
             }
 
-            player.score += roundScore;
-            updatePlayerList();
-            nextPlayer();
+            const playerCoords = miniMap.getCenter();
+            const distance = ymaps.coordSystem.geo.getDistance(playerCoords, panoramaCoords);
+
+            playerGuesses[player.name] = {
+                distance,
+                coords: playerCoords
+            };
+
+            if (Object.keys(playerGuesses).length === players.length) {
+                allPlayersGuessed = true;
+                endRound();
+            }
         });
+
+        function endRound() {
+            const resultElement = document.getElementById('result');
+            const results = Object.entries(playerGuesses).map(([name, data]) => {
+                let score = 0;
+                if (data.distance < 1000) {
+                    score = 10;
+                } else if (data.distance >= 1000 && data.distance < 5000) {
+                    score = 5;
+                } else if (data.distance >= 5000 && data.distance < 20000) {
+                    score = 3;
+                }
+                const player = players.find(p => p.name === name);
+                player.score += score;
+
+                return `${name}: Расстояние: ${Math.round(data.distance)} м, Очки: ${score}`;
+            }).join('<br>');
+
+            resultElement.innerHTML = `Результаты раунда:<br>${results}`;
+            updatePlayerList();
+
+            setTimeout(startRound, 5000); // Следующий раунд через 5 секунд
+        }
 
         loadLocations().then(data => {
             locations = data;
