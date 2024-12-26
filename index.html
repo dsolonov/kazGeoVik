@@ -212,10 +212,10 @@
 
         document.getElementById('startButton').addEventListener('click', () => {
             const playerName = document.getElementById('playerName').value.trim();
-            
+
             if (Object.keys(players).length > 0) {
                 document.getElementById('playerSetup').style.display = 'none';
-                
+
                 loadLocations().then(data => {
                     locations = data;
                     startRound();
@@ -312,12 +312,23 @@
                 document.getElementById('guessButton').style.display = 'block';
             }
         });
-        
+
         function fetchRatingData() {
             const scriptURL = 'https://script.google.com/macros/s/AKfycbwi3rDwL9mnZijV1SvQog44PGD62G-27lFKs0oMEJLDYDobC42y7cKrgs_ViGmYkKGT/exec'; // Замените на URL вашего веб-приложения
             fetch(scriptURL)
-                .then(response => response.json())
-                .then(data => displayRatingTable(data))
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Ошибка сети или проблема с сервером');
+                    }
+                    return response.json();
+                })
+                .then(responseData => {
+                    if (responseData && responseData.data) {
+                        displayRatingTable(responseData.data); // Используем responseData.data
+                    } else {
+                        console.error('Ошибка: Неверный формат данных от сервера');
+                    }
+                })
                 .catch(error => console.error('Ошибка при загрузке рейтинга:', error));
         }
 
@@ -334,7 +345,6 @@
             const table = document.createElement('table');
             table.id = 'ratingTable';
 
-            
             const headerRow = table.insertRow();
             const headers = data[0];
             headers.forEach(headerText => {
@@ -343,7 +353,6 @@
                 headerRow.appendChild(header);
             });
 
-            
             for (let i = 1; i < data.length; i++) {
                 const row = table.insertRow();
                 data[i].forEach(cellData => {
@@ -361,30 +370,30 @@
         }
 
         document.getElementById('guessButton').addEventListener('click', () => {
-            const playerName = Object.keys(players)[0]; 
+            const playerName = Object.keys(players)[0];
             if (!players[playerName].finished) {
                 document.getElementById('guessButton').style.display = 'none';
                 players[playerName].finished = true;
                 players[playerName].guessTime = (Date.now() - roundStartTime) / 1000;
-    
+
                 const playerCoords = playerMarker.geometry.getCoordinates();
                 const distance = ymaps.coordSystem.geo.getDistance(playerCoords, panoramaCoords);
-    
+
                 if (!panoramaMarker) {
                     panoramaMarker = new ymaps.Placemark(panoramaCoords, {}, { preset: 'islands#greenIcon' });
                     miniMap.geoObjects.add(panoramaMarker);
                 }
-    
+
                 if (line) {
                     line.geometry.setCoordinates([playerCoords, panoramaCoords]);
                 } else {
                     line = new ymaps.Polyline([playerCoords, panoramaCoords], {}, { strokeColor: '#0000FF', strokeWidth: 3 });
                     miniMap.geoObjects.add(line);
                 }
-    
+
                 let roundScore = calculateScore(distance);
                 players[playerName].score += roundScore;
-    
+
                 const resultElement = document.getElementById('result');
                 resultElement.innerHTML = `Игрок: ${playerName}<br>Расстояние: ${Math.round(distance)} м.<br>Очки за раунд: ${roundScore}.<br>Общий счёт: ${players[playerName].score}.<br>Время: ${players[playerName].guessTime.toFixed(1)} сек`;
                 fetchRatingData();
@@ -436,18 +445,17 @@
 
                 if (remainingTime <= 0) {
                     clearInterval(intervalId);
-                    
+
                     Object.keys(players).forEach(playerName => {
                         if (!players[playerName].finished) {
-                            players[playerName].score += 0; 
+                            players[playerName].score += 0;
                             players[playerName].finished = true;
-                            players[playerName].guessTime = roundDuration; 
+                            players[playerName].guessTime = roundDuration;
                         }
                     });
-                    
-                    
+
                     document.getElementById('nextRoundButton').style.display = 'block';
-                    
+
                 }
             }, 1000);
         }
@@ -492,9 +500,9 @@
                     method: 'POST',
                     body: formData
                 })
-                .then(response => response.text())
-                .then(data => console.log('Результаты игрока ' + player.name + ' сохранены:', data))
-                .catch(error => console.error('Ошибка:', error));
+                    .then(response => response.text())
+                    .then(data => console.log('Результаты игрока ' + player.name + ' сохранены:', data))
+                    .catch(error => console.error('Ошибка:', error));
             });
         }
     });
