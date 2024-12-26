@@ -314,7 +314,7 @@
         });
         
         function fetchRatingData() {
-            const scriptURL = 'YOUR_GOOGLE_APPS_SCRIPT_URL'; // Замените на URL вашего веб-приложения
+            const scriptURL = 'https://script.google.com/macros/s/AKfycbzUX8Hse-35R_5F00l0FZjjNimQuCjnOmQtHHES_KTrmlvVxdiv-T1qfjKwORdJBGKS/exec'; // Замените на URL вашего веб-приложения
             fetch(scriptURL)
                 .then(response => response.json())
                 .then(data => displayRatingTable(data))
