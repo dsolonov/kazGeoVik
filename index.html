@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>Игра</title>
     <script src="https://api-maps.yandex.ru/2.1/?apikey=2bc4db1f-55d0-4cfe-bb41-e925007c5578&lang=ru_RU"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
     <style>
         html, body {
             margin: 0;
@@ -117,9 +118,9 @@
         }
         #ratingTableContainer {
             position: absolute;
-            top: 50%;
+            top: 100px; /* Ниже таймера */
             left: 50%;
-            transform: translate(-50%, -50%);
+            transform: translate(-50%, 0%); /* Выравнивание по центру */
             background: white;
             padding: 20px;
             border: 2px solid black;
@@ -135,7 +136,19 @@
             padding: 8px;
             text-align: left;
         }
+        #toggleTableButton {
+            position: absolute;
+            top: 60px; /* Под таймером */
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 10px 20px;
+            font-size: 16px;
+            z-index: 30;
+        }
     </style>
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 </head>
 <body>
 <div id="panorama"></div>
@@ -155,6 +168,7 @@
     <button id="startButton" disabled>Начать</button>
 </div>
 <div id="timer"></div>
+<button id="toggleTableButton">Показать/скрыть таблицу</button>
 <div id="ratingTableContainer"></div>
 
 <script>
@@ -313,6 +327,8 @@
             }
         });
 
+        let ratingTable; // Переменная для хранения объекта DataTable
+
         function fetchRatingData() {
             const scriptURL = 'https://script.google.com/macros/s/AKfycbwi3rDwL9mnZijV1SvQog44PGD62G-27lFKs0oMEJLDYDobC42y7cKrgs_ViGmYkKGT/exec'; // Замените на URL вашего веб-приложения
             fetch(scriptURL)
@@ -344,6 +360,7 @@
 
             const table = document.createElement('table');
             table.id = 'ratingTable';
+            table.classList.add('display'); // Добавляем класс для DataTables
 
             const headerRow = table.insertRow();
             const headers = data[0];
@@ -362,6 +379,22 @@
             }
 
             tableContainer.appendChild(table);
+
+            // Инициализируем DataTable только один раз
+            if (!ratingTable) {
+                ratingTable = new DataTable('#ratingTable', {
+                    "order": [[1, "desc"]], // Сортировка по второму столбцу (Очки) по убыванию
+                    "paging": true, // Включаем пагинацию
+                    "pageLength": 10, // Количество записей на странице
+                    "searching": false, // Отключаем встроенный поиск (можно включить, если нужно)
+                    "info": false,    // Отключаем информационный блок
+                    "lengthChange": false // Отключаем выбор количества записей на странице
+                });
+            } else {
+                // Если таблица уже инициализирована, обновляем данные
+                ratingTable.clear().rows.add(data.slice(1)).draw();
+            }
+
             tableContainer.style.display = 'block';
         }
 
@@ -505,6 +538,15 @@
                     .catch(error => console.error('Ошибка:', error));
             });
         }
+
+        document.getElementById('toggleTableButton').addEventListener('click', () => {
+            const tableContainer = document.getElementById('ratingTableContainer');
+            if (tableContainer.style.display === 'none') {
+                fetchRatingData(); // Загружаем данные и показываем таблицу
+            } else {
+                tableContainer.style.display = 'none';
+            }
+        });
     });
 </script>
 </body>
