@@ -314,7 +314,7 @@
         });
         
         function fetchRatingData() {
-            const scriptURL = 'https://script.google.com/macros/s/AKfycbxJF7D5UqlMfXhevq60bgLu3wA-I_to9L-5saedcVJR-rrdcCQfyHC2RZu4nRe3hOgb/exec'; // Замените на URL вашего веб-приложения
+            const scriptURL = 'https://script.google.com/macros/s/AKfycbwzUnsVWLwXHDu2TLz1USgh_twEyYiq3S-JbrLz12mjHAkG89EZtxVEWhgla5adYrsI/exec'; // Замените на URL вашего веб-приложения
             fetch(scriptURL)
                 .then(response => response.json())
                 .then(data => displayRatingTable(data))
@@ -480,7 +480,7 @@
         }
 
         function saveResults(results) {
-            const scriptURL = 'https://script.google.com/macros/s/AKfycbxJF7D5UqlMfXhevq60bgLu3wA-I_to9L-5saedcVJR-rrdcCQfyHC2RZu4nRe3hOgb/exec'; // Замените на URL вашего веб-приложения
+            const scriptURL = 'https://script.google.com/macros/s/AKfycbwzUnsVWLwXHDu2TLz1USgh_twEyYiq3S-JbrLz12mjHAkG89EZtxVEWhgla5adYrsI/exec'; // Замените на URL вашего веб-приложения
 
             results.forEach(player => {
                 const formData = new FormData();
