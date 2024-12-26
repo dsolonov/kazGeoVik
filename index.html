@@ -410,23 +410,23 @@
         }
 
         function saveResults(results) {
-            const dataToSave = results.map(player => `${player.name},${player.score},${player.time}`).join('\n');
-            fetch('save_results.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'text/plain'
-                },
-                body: dataToSave
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Ошибка при сохранении результатов');
-                }
-                return response.text();
-            })
-            .then(data => console.log('Результаты сохранены:', data))
-            .catch(error => console.error('Ошибка:', error));
-        }
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbyxzp3VfKHj1wFaJtAJztEXorywzAb0aBlbOLGKDKWvtmfBJEsVZ2-u2VRje6OaYGGA/exec'; // Вставьте URL вашего веб-приложения
+
+    results.forEach(player => {
+        const formData = new FormData();
+        formData.append('name', player.name);
+        formData.append('score', player.score);
+        formData.append('time', player.time);
+
+        fetch(scriptURL, {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.text())
+        .then(data => console.log('Результаты игрока ' + player.name + ' сохранены:', data))
+        .catch(error => console.error('Ошибка:', error));
+    });
+}
     });
 </script>
 </body>
