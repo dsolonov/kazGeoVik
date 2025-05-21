@@ -1,0 +1,312 @@
+/* Основные стили */
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    font-family: Arial, sans-serif;
+}
+
+/* Панорама */
+#panorama {
+    width: 100%;
+    height: 100%;
+}
+
+/* Мини-карта */
+#miniMapContainer {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 200px;
+    height: 150px;
+    border: 2px solid #ccc;
+    z-index: 10;
+    transition: all 0.3s ease;
+    background: white;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+#miniMapContainer.expanded {
+    width: 100vw;
+    height: 50vh;
+    right: 0;
+    top: 0;
+}
+
+#miniMap {
+    width: 100%;
+    height: 100%;
+}
+
+/* Кнопки управления */
+#miniMapButton {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    padding: 10px;
+    font-size: 25px;
+    z-index: 20;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+#miniMapButton:hover {
+    background: #f5f5f5;
+}
+
+#guessButton, #nextRoundButton {
+    position: absolute;
+    padding: 20px 55px;
+    font-size: 32px;
+    color: white;
+    border: none;
+    cursor: pointer;
+    z-index: 20;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    transition: all 0.2s ease;
+}
+
+#guessButton:hover, #nextRoundButton:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+}
+
+#guessButton:active, #nextRoundButton:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+#guessButton {
+    top: 10px;
+    left: 15px;
+    background-color: #4CAF50;
+    display: none;
+}
+
+#nextRoundButton {
+    top: 100px;
+    left: 10px;
+    background-color: #2196F3;
+    display: none;
+}
+
+/* Результаты и сообщения */
+#result {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.9);
+    font-size: 32px;
+    font-weight: bold;
+    border: 1px solid #ccc;
+    z-index: 20;
+    border-radius: 8px;
+    text-align: center;
+    max-width: 80%;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+#finalMessage {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 40px;
+    border: 2px solid black;
+    font-size: 36px;
+    font-weight: bold;
+    text-align: center;
+    z-index: 1000;
+    border-radius: 12px;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+    max-width: 80%;
+    line-height: 1.5;
+}
+
+/* Настройка игроков */
+#playerSetup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 30px;
+    border: 2px solid black;
+    z-index: 1000;
+    border-radius: 10px;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+    text-align: center;
+}
+
+#playerSetup label {
+    display: block;
+    margin-bottom: 10px;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+#playerSetup input {
+    padding: 10px;
+    font-size: 18px;
+    width: 80%;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+#playerSetup button {
+    padding: 12px 24px;
+    font-size: 18px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin: 5px;
+}
+
+#playerSetup button:hover {
+    background-color: #45a049;
+}
+
+#playerSetup button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+#playersList {
+    margin-top: 20px;
+    list-style: none;
+    padding: 0;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+#playersList li {
+    padding: 8px;
+    margin: 5px 0;
+    background: #f5f5f5;
+    border-radius: 4px;
+}
+
+/* Таймер */
+#timer {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 32px;
+    font-weight: bold;
+    z-index: 20;
+    background: rgba(255, 255, 255, 0.8);
+    padding: 10px 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+/* Таблица рейтинга */
+#ratingTableContainer {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 20px;
+    border: 2px solid black;
+    z-index: 30;
+    display: none;
+    border-radius: 10px;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+    max-width: 90%;
+    max-height: 80vh;
+    overflow: auto;
+}
+
+#ratingTable {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 18px;
+}
+
+#ratingTable th, #ratingTable td {
+    border: 1px solid black;
+    padding: 12px;
+    text-align: left;
+}
+
+#ratingTable th {
+    background-color: #f2f2f2;
+    position: sticky;
+    top: 0;
+}
+
+#ratingTable tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+#ratingTable tr:hover {
+    background-color: #f1f1f1;
+}
+
+/* Адаптивные стили */
+@media (max-width: 768px) {
+    #result {
+        font-size: 24px;
+        padding: 15px;
+        bottom: 10px;
+    }
+
+    #finalMessage {
+        font-size: 24px;
+        padding: 20px;
+    }
+
+    #guessButton, #nextRoundButton {
+        padding: 15px 30px;
+        font-size: 24px;
+    }
+
+    #nextRoundButton {
+        top: 80px;
+    }
+
+    #timer {
+        font-size: 24px;
+        padding: 8px 15px;
+    }
+}
+
+@media (max-width: 480px) {
+    #result {
+        font-size: 18px;
+        padding: 10px;
+    }
+
+    #finalMessage {
+        font-size: 20px;
+        padding: 15px;
+    }
+
+    #playerSetup {
+        padding: 15px;
+        width: 90%;
+    }
+
+    #playerSetup input {
+        font-size: 16px;
+    }
+
+    #playerSetup button {
+        font-size: 16px;
+        padding: 10px 15px;
+    }
+}
