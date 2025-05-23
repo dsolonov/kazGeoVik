@@ -19,6 +19,9 @@ class MapManager {
     }
 
     initMiniMap() {
+        if (this.miniMap) {
+        this.miniMap.destroy();
+        }
         this.miniMap = new ymaps.Map('miniMap', {
             center: [48, 68],
             zoom: 5,
