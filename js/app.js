@@ -13,7 +13,7 @@ class App {
     }
 
     setupGameStart() {
-        document.getElementById('startButton').addEventListener('click', async () => {
+        document.getElementById('startButton').addEventListener('click', async () => this.startGame()); {
             const playerName = document.getElementById('playerName').value.trim();
             if (!playerName) return;
             
