@@ -1,49 +1,42 @@
 class UIManager {
     constructor() {
+        // Устанавливаем базовый интерфейс для одного игрока
         this.initPlayerSetup();
         this.initEventListeners();
     }
 
     initPlayerSetup() {
-        const setupHTML = `
-            <label for="playerName">Введите ваше имя:</label>
-            <input type="text" id="playerName">
-            <button id="addPlayer">Добавить игрока</button>
-            <ul id="playersList"></ul>
-            <button id="startButton" disabled>Начать</button>
+        // Простая форма с именем и кнопкой "Начать"
+        document.getElementById('playerSetup').innerHTML = `
+            <div class="setup-content">
+                <h1>Географическая игра</h1>
+                <label for="playerName">Введите ваше имя:</label>
+                <input type="text" id="playerName" placeholder="Ваше имя" maxlength="50">
+                <button id="startButton">Начать игру</button>
+            </div>
         `;
-        document.getElementById('playerSetup').innerHTML = setupHTML;
     }
 
     initEventListeners() {
-        document.getElementById('addPlayer').addEventListener('click', () => this.handleAddPlayer());
-        document.getElementById('playerName').addEventListener('keyup', (e) => {
-            if (e.key === 'Enter') this.handleAddPlayer();
+        // Обработчик для кнопки "Начать"
+        document.getElementById('startButton').addEventListener('click', () => {
+            const name = document.getElementById('playerName').value.trim();
+            if (name) {
+                document.getElementById('playerSetup').style.display = 'none';
+            }
         });
-    }
-
-    handleAddPlayer() {
-        const nameInput = document.getElementById('playerName');
-        const name = nameInput.value.trim();
-        
-        if (name) {
-            const listItem = document.createElement('li');
-            listItem.textContent = name;
-            document.getElementById('playersList').appendChild(listItem);
-            nameInput.value = '';
-            document.getElementById('startButton').disabled = false;
-        }
     }
 
     showResult(playerName, distance, roundScore, totalScore, guessTime) {
         const resultElement = document.getElementById('result');
         resultElement.innerHTML = `
-            Игрок: ${playerName}<br>
-            Расстояние: ${Math.round(distance)} м.<br>
-            Очки за раунд: ${roundScore}.<br>
-            Общий счёт: ${totalScore}.<br>
-            Время: ${guessTime.toFixed(1)} сек
+            <strong>${playerName}</strong>, ваш результат:<br>
+            Расстояние: <strong>${Math.round(distance)} м</strong><br>
+            Очки за раунд: <strong>${roundScore}</strong><br>
+            Общий счёт: <strong>${totalScore}</strong><br>
+            Время: <strong>${guessTime.toFixed(1)} сек</strong>
         `;
+        resultElement.style.display = 'block';
     }
 
     updateTimer(remainingTime) {
@@ -53,15 +46,21 @@ class UIManager {
             `${minutes}:${seconds.toString().padStart(2, '0')}`;
     }
 
-    showFinalResults(results) {
-        let resultsText = "Итоговый рейтинг:<br>";
-        results.forEach(player => {
-            resultsText += `${player.name}: ${player.score} очков, время: ${player.time.toFixed(1)} сек<br>`;
-        });
-
+    showFinalResults(playerName, totalScore, totalTime) {
         const finalMessage = document.getElementById('finalMessage');
-        finalMessage.innerHTML = resultsText + "Спасибо за игру!";
+        finalMessage.innerHTML = `
+            <h2>Игра завершена!</h2>
+            <p>Игрок: <strong>${playerName}</strong></p>
+            <p>Итоговый счёт: <strong>${totalScore} очков</strong></p>
+            <p>Общее время: <strong>${totalTime.toFixed(1)} сек</strong></p>
+            <button id="restartButton">Играть снова</button>
+        `;
         finalMessage.style.display = 'block';
+
+        // Добавляем обработчик для рестарта
+        document.getElementById('restartButton').addEventListener('click', () => {
+            location.reload(); // Перезагружаем страницу
+        });
     }
 
     toggleElement(id, show) {
