@@ -1,75 +1,57 @@
-/* Основные стили и переменные */
-:root {
-  --primary-color: #4CAF50;
-  --secondary-color: #2196F3;
-  --text-color: #333;
-  --border-color: #ccc;
-  --shadow-sm: 0 2px 5px rgba(0,0,0,0.1);
-  --shadow-md: 0 4px 8px rgba(0,0,0,0.2);
-  --shadow-lg: 0 8px 16px rgba(0,0,0,0.2);
-}
-
+/* Основные стили */
 html, body {
     margin: 0;
     padding: 0;
     width: 100%;
     height: 100%;
     font-family: Arial, sans-serif;
-    overflow: hidden;
 }
 
 /* Панорама */
 #panorama {
     width: 100%;
     height: 100%;
-    position: relative;
-    z-index: 1;
 }
 
-/* Мини-карта (гарантированно единственная) */
+/* Мини-карта */
 #miniMapContainer {
     position: absolute;
     top: 10px;
     right: 10px;
     width: 200px;
     height: 150px;
-    border: 2px solid var(--border-color);
-    z-index: 1000;
+    border: 2px solid #ccc;
+    z-index: 10;
     transition: all 0.3s ease;
     background: white;
-    box-shadow: var(--shadow-sm);
-    overflow: hidden;
-    contain: strict;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
 }
 
 #miniMapContainer.expanded {
-    width: calc(100vw - 20px);
+    width: 100vw;
     height: 50vh;
-    right: 10px;
-    top: 10px;
+    right: 0;
+    top: 0;
 }
 
 #miniMap {
     width: 100%;
     height: 100%;
-    position: relative;
-    all: initial;
 }
 
 /* Кнопки управления */
 #miniMapButton {
-    position: fixed;
-    top: 20px;
-    right: 20px;
+    position: absolute;
+    top: 10px;
+    right: 10px;
     padding: 10px;
     font-size: 25px;
-    z-index: 1001;
+    z-index: 20;
     background: #fff;
-    border: 1px solid var(--border-color);
+    border: 1px solid #ccc;
     border-radius: 4px;
     cursor: pointer;
-    box-shadow: var(--shadow-sm);
-    transition: all 0.2s ease;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
 #miniMapButton:hover {
@@ -85,32 +67,32 @@ html, body {
     cursor: pointer;
     z-index: 20;
     border-radius: 8px;
-    box-shadow: var(--shadow-md);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
     transition: all 0.2s ease;
+}
+
+#guessButton:hover, #nextRoundButton:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+}
+
+#guessButton:active, #nextRoundButton:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
 #guessButton {
     top: 10px;
     left: 15px;
-    background-color: var(--primary-color);
+    background-color: #4CAF50;
     display: none;
 }
 
 #nextRoundButton {
     top: 100px;
     left: 10px;
-    background-color: var(--secondary-color);
+    background-color: #2196F3;
     display: none;
-}
-
-#guessButton:hover, #nextRoundButton:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-lg);
-}
-
-#guessButton:active, #nextRoundButton:active {
-    transform: translateY(0);
-    box-shadow: var(--shadow-md);
 }
 
 /* Результаты и сообщения */
@@ -123,13 +105,12 @@ html, body {
     background: rgba(255, 255, 255, 0.9);
     font-size: 32px;
     font-weight: bold;
-    border: 1px solid var(--border-color);
+    border: 1px solid #ccc;
     z-index: 20;
     border-radius: 8px;
     text-align: center;
     max-width: 80%;
-    box-shadow: var(--shadow-md);
-    animation: fadeIn 0.3s ease-out;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
 #finalMessage {
@@ -144,12 +125,11 @@ html, body {
     font-size: 36px;
     font-weight: bold;
     text-align: center;
-    z-index: 1002;
+    z-index: 1000;
     border-radius: 12px;
-    box-shadow: var(--shadow-lg);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
     max-width: 80%;
     line-height: 1.5;
-    animation: fadeIn 0.3s ease-out;
 }
 
 /* Настройка игроков */
@@ -161,9 +141,9 @@ html, body {
     background: white;
     padding: 30px;
     border: 2px solid black;
-    z-index: 1003;
+    z-index: 1000;
     border-radius: 10px;
-    box-shadow: var(--shadow-lg);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
     text-align: center;
 }
 
@@ -179,20 +159,19 @@ html, body {
     font-size: 18px;
     width: 80%;
     margin-bottom: 15px;
-    border: 1px solid var(--border-color);
+    border: 1px solid #ccc;
     border-radius: 4px;
 }
 
 #playerSetup button {
     padding: 12px 24px;
     font-size: 18px;
-    background-color: var(--primary-color);
+    background-color: #4CAF50;
     color: white;
     border: none;
     border-radius: 4px;
     cursor: pointer;
     margin: 5px;
-    transition: background-color 0.2s;
 }
 
 #playerSetup button:hover {
@@ -202,6 +181,21 @@ html, body {
 #playerSetup button:disabled {
     background-color: #cccccc;
     cursor: not-allowed;
+}
+
+#playersList {
+    margin-top: 20px;
+    list-style: none;
+    padding: 0;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+#playersList li {
+    padding: 8px;
+    margin: 5px 0;
+    background: #f5f5f5;
+    border-radius: 4px;
 }
 
 /* Таймер */
@@ -216,13 +210,51 @@ html, body {
     background: rgba(255, 255, 255, 0.8);
     padding: 10px 20px;
     border-radius: 8px;
-    box-shadow: var(--shadow-sm);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
-/* Анимации */
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+/* Таблица рейтинга */
+#ratingTableContainer {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 20px;
+    border: 2px solid black;
+    z-index: 30;
+    display: none;
+    border-radius: 10px;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+    max-width: 90%;
+    max-height: 80vh;
+    overflow: auto;
+}
+
+#ratingTable {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 18px;
+}
+
+#ratingTable th, #ratingTable td {
+    border: 1px solid black;
+    padding: 12px;
+    text-align: left;
+}
+
+#ratingTable th {
+    background-color: #f2f2f2;
+    position: sticky;
+    top: 0;
+}
+
+#ratingTable tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+#ratingTable tr:hover {
+    background-color: #f1f1f1;
 }
 
 /* Адаптивные стили */
@@ -254,20 +286,9 @@ html, body {
 }
 
 @media (max-width: 480px) {
-    #miniMapContainer {
-        width: 150px;
-        height: 120px;
-    }
-    
-    #miniMapContainer.expanded {
-        width: calc(100vw - 20px);
-        height: 40vh;
-    }
-
     #result {
         font-size: 18px;
         padding: 10px;
-        max-width: 90%;
     }
 
     #finalMessage {
@@ -287,20 +308,5 @@ html, body {
     #playerSetup button {
         font-size: 16px;
         padding: 10px 15px;
-    }
-
-    #guessButton, #nextRoundButton {
-        padding: 12px 24px;
-        font-size: 18px;
-    }
-    
-    #guessButton {
-        top: 5px;
-        left: 5px;
-    }
-    
-    #nextRoundButton {
-        top: 60px;
-        left: 5px;
     }
 }
