@@ -11,7 +11,7 @@ class MapManager {
         this.panoramaMarker = null;
         this.line = null;
         this.isMiniMapExpanded = false;
-        this.ymapsLoaded = false;
+        this.ymapsLoadPromise = null;
     }
 
     async init() {
@@ -19,58 +19,84 @@ class MapManager {
             await this.loadYmaps();
             await this.initMiniMap();
             this.initEventListeners();
+            return true;
         } catch (error) {
             console.error('Ошибка инициализации карты:', error);
             this.showMapError();
+            return false;
         }
     }
 
     loadYmaps() {
-        return new Promise((resolve, reject) => {
-            if (window.ymaps) {
-                this.ymapsLoaded = true;
+        if (this.ymapsLoadPromise) {
+            return this.ymapsLoadPromise;
+        }
+
+        this.ymapsLoadPromise = new Promise((resolve, reject) => {
+            // Проверяем, возможно API уже загружено
+            if (window.ymaps && window.ymaps.Map) {
                 return resolve();
             }
 
-            const timeout = setTimeout(() => {
-                reject(new Error('Timeout loading Yandex Maps API'));
-            }, 10000);
+            // Проверяем, не загружается ли API другим скриптом
+            const existingScript = document.querySelector('script[src*="api-maps.yandex.ru"]');
+            if (existingScript) {
+                const checkInterval = setInterval(() => {
+                    if (window.ymaps && window.ymaps.Map) {
+                        clearInterval(checkInterval);
+                        resolve();
+                    }
+                }, 100);
+                return;
+            }
 
-            window.initYandexMapsCallback = () => {
-                clearTimeout(timeout);
-                this.ymapsLoaded = true;
-                resolve();
-            };
-
+            // Создаем и настраиваем новый тег script
             const script = document.createElement('script');
-            script.src = 'https://api-maps.yandex.ru/2.1/?apikey=2bc4db1f-55d0-4cfe-bb41-e925007c5578&lang=ru_RU&onload=initYandexMapsCallback';
+            script.src = 'https://api-maps.yandex.ru/2.1/?apikey=2bc4db1f-55d0-4cfe-bb41-e925007c5578&lang=ru_RU';
             script.crossOrigin = 'anonymous';
-            script.onerror = () => {
-                clearTimeout(timeout);
-                reject(new Error('Failed to load Yandex Maps API'));
+            
+            // Обработчики загрузки скрипта
+            script.onload = () => {
+                if (!window.ymaps) {
+                    reject(new Error('Библиотека Яндекс.Карт не загрузилась'));
+                    return;
+                }
+                
+                // Ожидаем полной готовности API
+                window.ymaps.ready(() => {
+                    if (!window.ymaps.Map) {
+                        reject(new Error('Класс Map не доступен в API'));
+                    } else {
+                        resolve();
+                    }
+                });
             };
+            
+            script.onerror = () => {
+                reject(new Error('Не удалось загрузить скрипт Яндекс.Карт'));
+            };
+            
             document.head.appendChild(script);
         });
+
+        return this.ymapsLoadPromise;
     }
 
-    initMiniMap() {
-        if (!this.ymapsLoaded) {
-            throw new Error('Yandex Maps API not loaded');
-        }
-
-        // Очищаем предыдущую карту
-        if (this.miniMap) {
-            this.miniMap.destroy();
-            this.miniMap = null;
-        }
-
-        // Очищаем контейнер
-        const container = document.getElementById('miniMap');
-        container.innerHTML = '';
-        container.removeAttribute('data-error');
-
+    async initMiniMap() {
         try {
-            this.miniMap = new ymaps.Map('miniMap', {
+            // Очищаем предыдущую карту, если она существует
+            if (this.miniMap) {
+                this.miniMap.destroy();
+                this.miniMap = null;
+            }
+
+            // Проверяем готовность API
+            if (!window.ymaps || !window.ymaps.Map) {
+                throw new Error('API Яндекс.Карт не готово');
+            }
+
+            // Создаем новую карту
+            this.miniMap = new window.ymaps.Map('miniMap', {
                 center: [48, 68],
                 zoom: 5,
                 controls: ['zoomControl']
@@ -79,7 +105,8 @@ class MapManager {
                 suppressObsoleteBrowserNotifier: true
             });
 
-            this.loadKazakhstanBorder();
+            await this.loadKazakhstanBorder();
+            return true;
         } catch (error) {
             console.error('Ошибка создания карты:', error);
             this.showMapError();
@@ -87,40 +114,39 @@ class MapManager {
         }
     }
 
-    loadKazakhstanBorder() {
-        if (!this.miniMap) return;
+    async loadKazakhstanBorder() {
+        if (!this.miniMap) return false;
 
-        fetch('./kazakhstan_border.json')
-            .then(response => {
-                if (!response.ok) throw new Error('Network response was not ok');
-                return response.json();
-            })
-            .then(geoJsonData => {
-                const border = new ymaps.GeoObject({
-                    geometry: {
-                        type: "Polygon",
-                        coordinates: geoJsonData.features[0].geometry.coordinates,
-                        fillRule: "nonZero"
-                    },
-                    properties: { hintContent: "Казахстан" }
-                }, {
-                    strokeColor: "#008000",
-                    strokeWidth: 3,
-                    fillColor: 'rgba(0,0,0,0)',
-                    interactivityModel: 'default#transparent'
-                });
-
-                this.miniMap.geoObjects.add(border);
-                this.miniMap.container.fitToViewport();
-            })
-            .catch(error => {
-                console.error("Ошибка загрузки границы:", error);
-                this.showMapError();
+        try {
+            const response = await fetch('./kazakhstan_border.json');
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            
+            const geoJsonData = await response.json();
+            const border = new window.ymaps.GeoObject({
+                geometry: {
+                    type: "Polygon",
+                    coordinates: geoJsonData.features[0].geometry.coordinates,
+                    fillRule: "nonZero"
+                },
+                properties: { hintContent: "Казахстан" }
+            }, {
+                strokeColor: "#008000",
+                strokeWidth: 3,
+                fillColor: 'rgba(0,0,0,0)',
+                interactivityModel: 'default#transparent'
             });
+
+            this.miniMap.geoObjects.add(border);
+            this.miniMap.container.fitToViewport();
+            return true;
+        } catch (error) {
+            console.error("Ошибка загрузки границы:", error);
+            throw error;
+        }
     }
 
     initEventListeners() {
-        // Удаляем старые обработчики, если есть
+        // Удаляем старые обработчики, если они есть
         const mapButton = document.getElementById('miniMapButton');
         mapButton.removeEventListener('click', this.toggleMiniMapSize);
         
@@ -151,7 +177,7 @@ class MapManager {
         if (this.playerMarker) {
             this.playerMarker.geometry.setCoordinates(coords);
         } else {
-            this.playerMarker = new ymaps.Placemark(coords, {}, { 
+            this.playerMarker = new window.ymaps.Placemark(coords, {}, { 
                 preset: 'islands#redIcon',
                 zIndex: 1000
             });
@@ -160,23 +186,23 @@ class MapManager {
         }
     }
 
-    loadPanorama(coords) {
+    async loadPanorama(coords) {
         return new Promise((resolve, reject) => {
             if (this.panoramaPlayer) {
                 this.panoramaPlayer.destroy();
                 this.panoramaPlayer = null;
             }
 
-            ymaps.panorama.locate(coords)
+            window.ymaps.panorama.locate(coords)
                 .then((panoramas) => {
                     if (panoramas.length > 0) {
-                        this.panoramaPlayer = new ymaps.panorama.Player('panorama', panoramas[0], { 
+                        this.panoramaPlayer = new window.ymaps.panorama.Player('panorama', panoramas[0], { 
                             controls: [],
                             zIndex: 999
                         });
                         resolve(true);
                     } else {
-                        reject(new Error('Панорамы не найдены'));
+                        reject(new Error('Панорамы не найдены для данных координат'));
                     }
                 })
                 .catch(reject);
@@ -188,13 +214,13 @@ class MapManager {
 
         this.clearMarkers();
 
-        this.panoramaMarker = new ymaps.Placemark(panoramaCoords, {}, { 
+        this.panoramaMarker = new window.ymaps.Placemark(panoramaCoords, {}, { 
             preset: 'islands#greenIcon',
             zIndex: 999
         });
         this.miniMap.geoObjects.add(this.panoramaMarker);
 
-        this.line = new ymaps.Polyline([playerCoords, panoramaCoords], {}, {
+        this.line = new window.ymaps.Polyline([playerCoords, panoramaCoords], {}, {
             strokeColor: '#0000FF',
             strokeWidth: 3,
             zIndex: 998
@@ -221,18 +247,45 @@ class MapManager {
 
     showMapError() {
         const container = document.getElementById('miniMap');
-        container.setAttribute('data-error', 'true');
+        if (!container) return;
+
         container.innerHTML = `
-            <div style="padding: 20px; text-align: center;">
-                <p style="color: #d32f2f; font-weight: bold;">Ошибка загрузки карты</p>
-                <p>Пожалуйста, проверьте:</p>
-                <ul style="text-align: left; margin: 10px auto; width: fit-content;">
-                    <li>Подключение к интернету</li>
-                    <li>Блокировку Яндекс.Карт</li>
-                </ul>
+            <div style="
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                background: rgba(255,255,255,0.9);
+                padding: 20px;
+                text-align: center;
+                z-index: 1000;
+                color: #333;
+            ">
+                <h3 style="color: #d32f2f; margin-bottom: 15px;">Ошибка загрузки карты</h3>
+                <div style="text-align: left; margin-bottom: 20px;">
+                    <p>Попробуйте:</p>
+                    <ul style="margin: 10px 0; padding-left: 20px;">
+                        <li>Обновить страницу (Ctrl+F5)</li>
+                        <li>Проверить интернет-соединение</li>
+                        <li>Отключить блокировщики рекламы</li>
+                    </ul>
+                </div>
                 <button onclick="window.location.reload()" 
-                        style="padding: 8px 16px; background: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer;">
-                    Перезагрузить
+                    style="
+                        padding: 10px 20px;
+                        background: #4CAF50;
+                        color: white;
+                        border: none;
+                        border-radius: 4px;
+                        cursor: pointer;
+                        font-size: 16px;
+                    ">
+                    Обновить страницу
                 </button>
             </div>
         `;
@@ -251,7 +304,8 @@ class MapManager {
             this.miniMap = null;
         }
 
-        // Очищаем глобальный callback
+        // Очищаем глобальные обработчики
         window.initYandexMapsCallback = null;
+        this.ymapsLoadPromise = null;
     }
 }
