@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <title>Игра</title>
+    <meta charset="UTF-8" name="theme-color" content="#4CAF50">
+    <link rel="manifest" href="manifest.json">
+       <title>Игра</title>
     <script src="https://api-maps.yandex.ru/2.1/?apikey=2bc4db1f-55d0-4cfe-bb41-e925007c5578&lang=ru_RU"></script>
     <style>
         html, body {
@@ -506,6 +507,13 @@
             });
         }
     });
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('service-worker.js')
+    .then(reg => console.log('Service Worker зарегистрирован', reg))
+    .catch(err => console.warn('Ошибка Service Worker', err));
+}
+    
 </script>
 </body>
 </html>
