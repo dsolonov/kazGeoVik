@@ -1,519 +1,351 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8" name="theme-color" content="#4CAF50">
-    <link rel="manifest" href="manifest.json">
-       <title>Игра</title>
+    <meta charset="UTF-8">
+    <title>GeoGuessr: Казахстан</title>
+    <!-- Подключаем API Яндекс Карт -->
     <script src="https://api-maps.yandex.ru/2.1/?apikey=2bc4db1f-55d0-4cfe-bb41-e925007c5578&lang=ru_RU"></script>
     <style>
-        html, body {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-        }
-        #panorama {
-            width: 100%;
-            height: 100%;
-        }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: Arial, sans-serif; }
+        #panorama { width: 100%; height: 100%; }
+        
+        /* Миникарта */
         #miniMapContainer {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            width: 200px;
-            height: 150px;
-            border: 2px solid #ccc;
-            z-index: 10;
-            transition: all 0.3s ease;
+            position: absolute; top: 10px; right: 10px;
+            width: 250px; height: 180px; border: 3px solid #fff;
+            border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            z-index: 10; transition: all 0.3s ease; background: #eee;
         }
-        #miniMap {
-            width: 100%;
-            height: 100%;
-        }
-        #miniMapContainer.expanded {
-            width: 100vw;
-            height: 50vh;
-        }
-        #miniMapButton {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            padding: 10px;
-            font-size: 25px;
-            z-index: 20;
-        }
-        #guessButton, #nextRoundButton {
-            position: absolute;
-            padding: 20px 55px;
-            font-size: 32px;
-            color: white;
-            border: none;
-            cursor: pointer;
-            z-index: 20;
-        }
-        #guessButton {
-            top: 10px;
-            left: 15px;
-            background-color: #4CAF50;
-            display: none;
-        }
-        #nextRoundButton {
-            top: 100px;
-            left: 10px;
-            background-color: #2196F3;
-            display: none;
-        }
-        #result {
-            position: absolute;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            padding: 20px;
-            background: rgba(255, 255, 255, 0.9);
-            font-size: 32px;
-            font-weight: bold;
-            border: 1px solid #ccc;
-            z-index: 20;
-        }
-        #finalMessage {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: white;
-            padding: 20px;
-            border: 2px solid black;
-            font-size: 36px;
-            font-weight: bold;
-            text-align: center;
-            z-index: 1000;
-        }
-        #playerSetup {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: white;
-            padding: 20px;
-            border: 2px solid black;
-            z-index: 1000;
-        }
-        #playersList {
-            margin-top: 10px;
-            list-style: none;
-            padding: 0;
-        }
-        #startButton {
-            margin-top: 10px;
-        }
-        #timer {
-            position: absolute;
-            top: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 32px;
-            font-weight: bold;
-            z-index: 20;
-        }
-        #ratingTableContainer {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: white;
-            padding: 20px;
-            border: 2px solid black;
-            z-index: 30;
-            display: none; /* Скрываем таблицу изначально */
-        }
-        #ratingTable {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        #ratingTable th, #ratingTable td {
-            border: 1px solid black;
-            padding: 8px;
-            text-align: left;
-        }
+        #miniMap { width: 100%; height: 100%; border-radius: 5px; }
+        #miniMapContainer.expanded { width: 80vw; height: 70vh; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+        
+        /* Кнопки и UI */
+        .btn { padding: 15px 30px; font-size: 20px; color: white; border: none; border-radius: 5px; cursor: pointer; z-index: 20; position: absolute; box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: background 0.2s; }
+        .btn:disabled { background: #ccc !important; cursor: not-allowed; }
+        
+        #miniMapToggle { top: -40px; right: 0; padding: 5px 10px; font-size: 14px; background-color: #333; }
+        #guessButton { bottom: 20px; right: 50%; transform: translateX(50%); background-color: #4CAF50; font-size: 24px; padding: 15px 50px; }
+        #guessButton:hover { background-color: #45a049; }
+        #nextRoundButton { bottom: 80px; right: 50%; transform: translateX(50%); background-color: #2196F3; }
+        
+        /* Информационные панели */
+        .panel { position: absolute; background: rgba(255, 255, 255, 0.95); padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 20; }
+        #timerPanel { top: 10px; left: 50%; transform: translateX(-50%); font-size: 28px; font-weight: bold; }
+        #resultPanel { bottom: 150px; left: 50%; transform: translateX(-50%); text-align: center; font-size: 20px; }
+        
+        /* Модальные окна */
+        .modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 30px; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); z-index: 1000; text-align: center; }
+        #ratingTable { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        #ratingTable th, #ratingTable td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        #ratingTable th { background-color: #f2f2f2; }
+        
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
+
 <div id="panorama"></div>
-<div id="miniMapContainer">
+
+<div id="miniMapContainer" class="hidden">
+    <button id="miniMapToggle" class="btn">Увеличить карту</button>
     <div id="miniMap"></div>
 </div>
-<button id="miniMapButton">Карта</button>
-<button id="guessButton">Угадай</button>
-<button id="nextRoundButton">Следующий раунд</button>
-<div id="result"></div>
-<div id="finalMessage"></div>
-<div id="playerSetup">
-    <label for="playerName">Введите ваше имя:</label>
-    <input type="text" id="playerName">
-    <button id="addPlayer">Добавить игрока</button>
-    <ul id="playersList"></ul>
-    <button id="startButton" disabled>Начать</button>
+
+<button id="guessButton" class="btn hidden">Угадать</button>
+<button id="nextRoundButton" class="btn hidden">Следующий раунд</button>
+
+<div id="timerPanel" class="panel hidden">07:00</div>
+<div id="resultPanel" class="panel hidden"></div>
+
+<!-- Окно регистрации -->
+<div id="playerSetup" class="modal">
+    <h2>Добро пожаловать</h2>
+    <input type="text" id="playerName" placeholder="Введите ваше имя" style="padding: 10px; font-size: 18px; width: 80%; margin-bottom: 15px;">
+    <br>
+    <button id="startButton" class="btn" style="position: static; background: #FF9800;">Начать игру</button>
 </div>
-<div id="timer"></div>
-<div id="ratingTableContainer"></div>
+
+<!-- Окно финала и рейтинга -->
+<div id="finalMessage" class="modal hidden">
+    <h2 id="finalText"></h2>
+    <div id="ratingTableContainer">Загрузка рейтинга...</div>
+</div>
 
 <script>
-    ymaps.ready(() => {
-        let locations = [];
-        let currentRound = 0;
-        let panoramaCoords;
-        let panoramaPlayer = null;
-        let playerMarker, panoramaMarker, line;
-        let players = {};
-        let roundStartTime;
-        const roundDuration = 7 * 60; // 7 minutes in seconds
+// --- КОНФИГУРАЦИЯ ---
+const CONFIG = {
+    ROUND_DURATION_SEC: 7 * 60,
+    LOCATIONS_URL: `locations.txt?nocache=${Date.now()}`,
+    BORDER_URL: './kazakhstan_border.json',
+    SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbwi3rDwL9mnZijV1SvQog44PGD62G-27lFKs0oMEJLDYDobC42y7cKrgs_ViGmYkKGT/exec'
+};
 
-        function loadLocations() {
-            const url = `locations.txt?nocache=${Date.now()}`;
-            return fetch(url)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Не удалось загрузить файл с координатами');
-                    }
-                    return response.text();
-                })
-                .then(data => {
-                    return data.trim().split('\n').map(line => {
-                        const [lat, lon] = line.split(',').map(Number);
-                        return [lat, lon];
-                    });
-                });
-        }
+// --- СОСТОЯНИЕ ИГРЫ ---
+const gameState = {
+    playerName: '',
+    score: 0,
+    totalTime: 0,
+    locations:[],
+    currentRound: 0,
+    roundStartTime: null,
+    timerInterval: null,
+    isRoundActive: false
+};
 
-        function addPlayer() {
-            const playerNameInput = document.getElementById('playerName');
-            const playerName = playerNameInput.value.trim();
-            if (playerName && !players[playerName]) {
-                players[playerName] = { score: 0, finished: false, guessTime: 0};
-                const playersList = document.getElementById('playersList');
-                const playerItem = document.createElement('li');
-                playerItem.textContent = playerName;
-                playersList.appendChild(playerItem);
-                playerNameInput.value = '';
-                document.getElementById('startButton').disabled = false;
-            } else if (players[playerName]) {
-                alert("Игрок с таким именем уже существует.");
-            } else {
-                alert("Пожалуйста, введите имя игрока.");
-            }
-        }
+// --- СОСТОЯНИЕ КАРТЫ ---
+const mapState = {
+    miniMap: null,
+    panoramaPlayer: null,
+    playerMarker: null,
+    targetMarker: null,
+    line: null
+};
 
-        document.getElementById('addPlayer').addEventListener('click', addPlayer);
-        document.getElementById('playerName').addEventListener('keyup', (event) => {
-            if (event.key === 'Enter') {
-                addPlayer();
-            }
-        });
+ymaps.ready(initApp);
 
-        document.getElementById('startButton').addEventListener('click', () => {
-            const playerName = document.getElementById('playerName').value.trim();
+function initApp() {
+    // Инициализация миникарты
+    mapState.miniMap = new ymaps.Map('miniMap', {
+        center: [48, 68], zoom: 4, controls: ['zoomControl']
+    });
 
-            if (Object.keys(players).length > 0) {
-                document.getElementById('playerSetup').style.display = 'none';
+    loadKazakhstanBorder();
 
-                loadLocations().then(data => {
-                    locations = data;
-                    startRound();
-                }).catch(error => console.error(error));
-            } else {
-                alert("Добавьте хотя бы одного игрока.");
-            }
-        });
+    // Обработчики UI
+    document.getElementById('startButton').addEventListener('click', handleStartGame);
+    document.getElementById('guessButton').addEventListener('click', handleGuess);
+    document.getElementById('nextRoundButton').addEventListener('click', startRound);
+    
+    // Клик по миникарте
+    mapState.miniMap.events.add('click', (e) => {
+        if (!gameState.isRoundActive) return;
 
-        function startRound() {
-            if (currentRound >= locations.length) {
-                showFinalResults();
-                return;
-            }
-
-            panoramaCoords = locations[currentRound];
-            loadPanorama(panoramaCoords);
-            currentRound++;
-            roundStartTime = Date.now();
-            updateTimer();
-            Object.keys(players).forEach(player => players[player].finished = false);
-        }
-
-        function loadPanorama(coords) {
-            if (panoramaPlayer) {
-                panoramaPlayer.destroy();
-            }
-            ymaps.panorama.locate(coords).then((panoramas) => {
-                if (panoramas.length > 0) {
-                    panoramaPlayer = new ymaps.panorama.Player('panorama', panoramas[0], { controls: [] });
-                } else {
-                    console.error('Панорамы для указанных координат не найдены:', coords);
-                    alert('Панорамы для указанных координат не найдены. Попытка загрузить следующий раунд.');
-                    startRound();
-                }
-            }).catch(error => {
-                console.error('Ошибка при загрузке панорамы:', error);
-                alert('Ошибка при загрузке панорамы. Попытка загрузить следующий раунд.');
-                startRound();
-            });
-        }
-
-        const miniMapContainer = document.getElementById('miniMapContainer');
-        const miniMap = new ymaps.Map('miniMap', {
-            center: [48, 68],
-            zoom: 5,
-            controls: ['zoomControl']
-        });
-
-        const KAZAKHSTAN_BORDER_URL = './kazakhstan_border.json';
-
-        fetch(KAZAKHSTAN_BORDER_URL)
-            .then(response => response.json())
-            .then(geoJsonData => {
-                const kazakhstanBorder = new ymaps.GeoObject({
-                    geometry: {
-                        type: "Polygon",
-                        coordinates: geoJsonData.features[0].geometry.coordinates,
-                        fillRule: "nonZero"
-                    },
-                    properties: {
-                        hintContent: "Казахстан"
-                    }
-                }, {
-                    strokeColor: "#008000",
-                    strokeWidth: 3,
-                    fillColor: 'rgba(0,0,0,0)',
-                    interactivityModel: 'default#transparent'
-                });
-
-                miniMap.geoObjects.add(kazakhstanBorder);
-                miniMap.container.fitToViewport();
-            })
-            .catch(error => console.error("Ошибка загрузки границы Казахстана:", error));
-
-        let isMiniMapExpanded = false;
-        document.getElementById('miniMapButton').addEventListener('click', () => {
-            isMiniMapExpanded = !isMiniMapExpanded;
-            if (isMiniMapExpanded) {
-                miniMapContainer.classList.add('expanded');
-            } else {
-                miniMapContainer.classList.remove('expanded');
-            }
-            setTimeout(() => miniMap.container.fitToViewport(), 300);
-        });
-
-        miniMap.events.add('click', (event) => {
-            const coords = event.get('coords');
-            if (playerMarker) {
-                playerMarker.geometry.setCoordinates(coords);
-            } else {
-                playerMarker = new ymaps.Placemark(coords, {}, { preset: 'islands#redIcon' });
-                miniMap.geoObjects.add(playerMarker);
-                document.getElementById('guessButton').style.display = 'block';
-            }
-        });
-
-        function fetchRatingData() {
-            const scriptURL = 'https://script.google.com/macros/s/AKfycbwi3rDwL9mnZijV1SvQog44PGD62G-27lFKs0oMEJLDYDobC42y7cKrgs_ViGmYkKGT/exec'; // Замените на URL вашего веб-приложения
-            fetch(scriptURL)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Ошибка сети или проблема с сервером');
-                    }
-                    return response.json();
-                })
-                .then(responseData => {
-                    if (responseData && responseData.data) {
-                        displayRatingTable(responseData.data); // Используем responseData.data
-                    } else {
-                        console.error('Ошибка: Неверный формат данных от сервера');
-                    }
-                })
-                .catch(error => console.error('Ошибка при загрузке рейтинга:', error));
-        }
-
-        function displayRatingTable(data) {
-            const tableContainer = document.getElementById('ratingTableContainer');
-            tableContainer.innerHTML = '';
-
-            if (data.length === 0) {
-                tableContainer.innerHTML = '<p>Рейтинг пока пуст.</p>';
-                tableContainer.style.display = 'block';
-                return;
-            }
-
-            const table = document.createElement('table');
-            table.id = 'ratingTable';
-
-            const headerRow = table.insertRow();
-            const headers = data[0];
-            headers.forEach(headerText => {
-                const header = document.createElement('th');
-                header.textContent = headerText;
-                headerRow.appendChild(header);
-            });
-
-            for (let i = 1; i < data.length; i++) {
-                const row = table.insertRow();
-                data[i].forEach(cellData => {
-                    const cell = row.insertCell();
-                    cell.textContent = cellData;
-                });
-            }
-
-            tableContainer.appendChild(table);
-            tableContainer.style.display = 'block';
-        }
-
-        function hideRatingTable() {
-            document.getElementById('ratingTableContainer').style.display = 'none';
-        }
-
-        document.getElementById('guessButton').addEventListener('click', () => {
-            const playerName = Object.keys(players)[0];
-            if (!players[playerName].finished) {
-                document.getElementById('guessButton').style.display = 'none';
-                players[playerName].finished = true;
-                players[playerName].guessTime = (Date.now() - roundStartTime) / 1000;
-
-                const playerCoords = playerMarker.geometry.getCoordinates();
-                const distance = ymaps.coordSystem.geo.getDistance(playerCoords, panoramaCoords);
-
-                if (!panoramaMarker) {
-                    panoramaMarker = new ymaps.Placemark(panoramaCoords, {}, { preset: 'islands#greenIcon' });
-                    miniMap.geoObjects.add(panoramaMarker);
-                }
-
-                if (line) {
-                    line.geometry.setCoordinates([playerCoords, panoramaCoords]);
-                } else {
-                    line = new ymaps.Polyline([playerCoords, panoramaCoords], {}, { strokeColor: '#0000FF', strokeWidth: 3 });
-                    miniMap.geoObjects.add(line);
-                }
-
-                let roundScore = calculateScore(distance);
-                players[playerName].score += roundScore;
-
-                const resultElement = document.getElementById('result');
-                resultElement.innerHTML = `Игрок: ${playerName}<br>Расстояние: ${Math.round(distance)} м.<br>Очки за раунд: ${roundScore}.<br>Общий счёт: ${players[playerName].score}.<br>Время: ${players[playerName].guessTime.toFixed(1)} сек`;
-                fetchRatingData();
-                document.getElementById('nextRoundButton').style.display = 'block';
-            }
-        });
-
-        function calculateScore(distance) {
-            if (distance < 1000) {
-                return 10;
-            } else if (distance < 5000) {
-                return 5;
-            } else if (distance < 20000) {
-                return 3;
-            } else {
-                return 0;
-            }
-        }
-
-        document.getElementById('nextRoundButton').addEventListener('click', () => {
-            if (playerMarker) {
-                miniMap.geoObjects.remove(playerMarker);
-                playerMarker = null;
-            }
-            if (panoramaMarker) {
-                miniMap.geoObjects.remove(panoramaMarker);
-                panoramaMarker = null;
-            }
-            if (line) {
-                miniMap.geoObjects.remove(line);
-                line = null;
-            }
-
-            startRound();
-            document.getElementById('nextRoundButton').style.display = 'none';
-            document.getElementById('result').textContent = '';
-            document.getElementById('guessButton').style.display = 'block';
-            hideRatingTable();
-        });
-
-        function updateTimer() {
-            const timerElement = document.getElementById('timer');
-            const intervalId = setInterval(() => {
-                const elapsedTime = Math.floor((Date.now() - roundStartTime) / 1000);
-                const remainingTime = Math.max(0, roundDuration - elapsedTime);
-                const minutes = Math.floor(remainingTime / 60);
-                const seconds = remainingTime % 60;
-                timerElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
-
-                if (remainingTime <= 0) {
-                    clearInterval(intervalId);
-
-                    Object.keys(players).forEach(playerName => {
-                        if (!players[playerName].finished) {
-                            players[playerName].score += 0;
-                            players[playerName].finished = true;
-                            players[playerName].guessTime = roundDuration;
-                        }
-                    });
-
-                    document.getElementById('nextRoundButton').style.display = 'block';
-
-                }
-            }, 1000);
-        }
-
-        function showFinalResults() {
-            let results = Object.entries(players).map(([name, data]) => ({
-                name: name,
-                score: data.score,
-                time: data.guessTime
-            }));
-            results.sort((a, b) => {
-                if (b.score !== a.score) {
-                    return b.score - a.score;
-                } else {
-                    return a.time - b.time;
-                }
-            });
-
-            let resultsText = "Итоговый рейтинг:<br>";
-            results.forEach(player => {
-                resultsText += `${player.name}: ${player.score} очков, время: ${player.time.toFixed(1)} сек<br>`;
-            });
-
-            const finalMessage = document.getElementById('finalMessage');
-            finalMessage.innerHTML = resultsText + "Спасибо за игру!";
-            finalMessage.style.display = 'block';
-
-            saveResults(results);
-            fetchRatingData();
-        }
-
-        function saveResults(results) {
-            const scriptURL = 'https://script.google.com/macros/s/AKfycbwi3rDwL9mnZijV1SvQog44PGD62G-27lFKs0oMEJLDYDobC42y7cKrgs_ViGmYkKGT/exec'; // Замените на URL вашего веб-приложения
-
-            results.forEach(player => {
-                const formData = new FormData();
-                formData.append('name', player.name);
-                formData.append('score', player.score);
-                formData.append('time', player.time);
-
-                fetch(scriptURL, {
-                    method: 'POST',
-                    body: formData
-                })
-                    .then(response => response.text())
-                    .then(data => console.log('Результаты игрока ' + player.name + ' сохранены:', data))
-                    .catch(error => console.error('Ошибка:', error));
-            });
+        const coords = e.get('coords');
+        if (mapState.playerMarker) {
+            mapState.playerMarker.geometry.setCoordinates(coords);
+        } else {
+            mapState.playerMarker = new ymaps.Placemark(coords, {}, { preset: 'islands#redDotIcon' });
+            mapState.miniMap.geoObjects.add(mapState.playerMarker);
+            document.getElementById('guessButton').classList.remove('hidden');
         }
     });
 
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('service-worker.js')
-    .then(reg => console.log('Service Worker зарегистрирован', reg))
-    .catch(err => console.warn('Ошибка Service Worker', err));
+    // Логика разворачивания миникарты
+    const miniMapContainer = document.getElementById('miniMapContainer');
+    document.getElementById('miniMapToggle').addEventListener('click', () => {
+        miniMapContainer.classList.toggle('expanded');
+        setTimeout(() => mapState.miniMap.container.fitToViewport(), 300);
+    });
 }
+
+async function handleStartGame() {
+    const nameInput = document.getElementById('playerName').value.trim();
+    if (!nameInput) {
+        alert("Пожалуйста, введите имя.");
+        return;
+    }
+    gameState.playerName = nameInput;
+    document.getElementById('playerSetup').classList.add('hidden');
+
+    try {
+        const response = await fetch(CONFIG.LOCATIONS_URL);
+        if (!response.ok) throw new Error('Ошибка загрузки координат');
+        const text = await response.text();
+        
+        gameState.locations = text.trim().split('\n')
+            .filter(line => line.includes(','))
+            .map(line => line.split(',').map(Number));
+
+        document.getElementById('miniMapContainer').classList.remove('hidden');
+        document.getElementById('timerPanel').classList.remove('hidden');
+        
+        startRound();
+    } catch (error) {
+        console.error(error);
+        alert('Не удалось загрузить локации.');
+    }
+}
+
+function startRound() {
+    if (gameState.currentRound >= gameState.locations.length) {
+        endGame();
+        return;
+    }
+
+    resetMap();
+    document.getElementById('resultPanel').classList.add('hidden');
+    document.getElementById('nextRoundButton').classList.add('hidden');
+    document.getElementById('guessButton').classList.add('hidden');
     
+    const coords = gameState.locations[gameState.currentRound];
+    loadPanorama(coords);
+
+    gameState.currentRound++;
+    gameState.isRoundActive = true;
+    gameState.roundStartTime = Date.now();
+    
+    startTimer();
+}
+
+function loadPanorama(coords) {
+    if (mapState.panoramaPlayer) mapState.panoramaPlayer.destroy();
+    
+    ymaps.panorama.locate(coords).then((panoramas) => {
+        if (panoramas.length > 0) {
+            mapState.panoramaPlayer = new ymaps.panorama.Player('panorama', panoramas[0], { controls:[] });
+        } else {
+            console.warn('Панорама не найдена:', coords);
+            startRound(); // Пропускаем, если нет панорамы
+        }
+    }).catch(err => {
+        console.error('Ошибка панорамы:', err);
+        startRound();
+    });
+}
+
+function startTimer() {
+    clearInterval(gameState.timerInterval);
+    const timerElement = document.getElementById('timerPanel');
+    
+    gameState.timerInterval = setInterval(() => {
+        const elapsed = Math.floor((Date.now() - gameState.roundStartTime) / 1000);
+        const remaining = Math.max(0, CONFIG.ROUND_DURATION_SEC - elapsed);
+        
+        const m = Math.floor(remaining / 60);
+        const s = remaining % 60;
+        timerElement.textContent = `${m}:${s.toString().padStart(2, '0')}`;
+
+        if (remaining <= 0) {
+            handleTimeUp();
+        }
+    }, 1000);
+}
+
+function handleTimeUp() {
+    if (!gameState.isRoundActive) return;
+    
+    // Автоматический промах
+    if (!mapState.playerMarker) {
+        mapState.playerMarker = new ymaps.Placemark([0,0], {}, { visible: false }); // фиктивный маркер
+    }
+    handleGuess(true);
+}
+
+function handleGuess(isTimeUp = false) {
+    if (!gameState.isRoundActive) return;
+    
+    gameState.isRoundActive = false;
+    clearInterval(gameState.timerInterval);
+    document.getElementById('guessButton').classList.add('hidden');
+    
+    const targetCoords = gameState.locations[gameState.currentRound - 1];
+    let distance = 0;
+    let roundScore = 0;
+    
+    const guessTime = (Date.now() - gameState.roundStartTime) / 1000;
+    gameState.totalTime += guessTime;
+
+    if (!isTimeUp && mapState.playerMarker) {
+        const playerCoords = mapState.playerMarker.geometry.getCoordinates();
+        distance = ymaps.coordSystem.geo.getDistance(playerCoords, targetCoords);
+        roundScore = calculateScore(distance);
+        
+        // Рисуем линию и правильный ответ
+        mapState.targetMarker = new ymaps.Placemark(targetCoords, {}, { preset: 'islands#greenDotIcon' });
+        mapState.line = new ymaps.Polyline([playerCoords, targetCoords], {}, { strokeColor: '#0000FF', strokeWidth: 3 });
+        mapState.miniMap.geoObjects.add(mapState.targetMarker);
+        mapState.miniMap.geoObjects.add(mapState.line);
+        mapState.miniMap.setBounds(mapState.line.geometry.getBounds(), { checkZoomRange: true });
+    }
+
+    gameState.score += roundScore;
+
+    const resultPanel = document.getElementById('resultPanel');
+    resultPanel.innerHTML = isTimeUp 
+        ? `<span style="color:red">Время вышло! Очков: 0</span>` 
+        : `Расстояние: <b>${Math.round(distance / 1000)} км</b><br>Очки за раунд: <b>${roundScore}</b><br>Общий счёт: <b>${gameState.score}</b><br>Время: ${guessTime.toFixed(1)} сек`;
+    
+    resultPanel.classList.remove('hidden');
+    document.getElementById('nextRoundButton').classList.remove('hidden');
+}
+
+function calculateScore(distanceMetres) {
+    if (distanceMetres < 10000) return 10;       // до 10 км
+    if (distanceMetres < 50000) return 5;        // до 50 км
+    if (distanceMetres < 200000) return 3;       // до 200 км
+    return 0;
+}
+
+function resetMap() {
+    if (mapState.playerMarker) mapState.miniMap.geoObjects.remove(mapState.playerMarker);
+    if (mapState.targetMarker) mapState.miniMap.geoObjects.remove(mapState.targetMarker);
+    if (mapState.line) mapState.miniMap.geoObjects.remove(mapState.line);
+    mapState.playerMarker = mapState.targetMarker = mapState.line = null;
+    mapState.miniMap.setCenter([48, 68], 4);
+}
+
+function endGame() {
+    document.getElementById('miniMapContainer').classList.add('hidden');
+    document.getElementById('timerPanel').classList.add('hidden');
+    document.getElementById('resultPanel').classList.add('hidden');
+    
+    const finalModal = document.getElementById('finalMessage');
+    document.getElementById('finalText').innerHTML = `Игра окончена!<br>${gameState.playerName}, ваш счет: ${gameState.score}`;
+    finalModal.classList.remove('hidden');
+
+    saveResults();
+    fetchRatingData();
+}
+
+// --- API И СЕТЬ ---
+function loadKazakhstanBorder() {
+    fetch(CONFIG.BORDER_URL)
+        .then(res => res.json())
+        .then(data => {
+            const border = new ymaps.GeoObject({
+                geometry: { type: "Polygon", coordinates: data.features[0].geometry.coordinates, fillRule: "nonZero" },
+                properties: { hintContent: "Казахстан" }
+            }, { strokeColor: "#008000", strokeWidth: 3, fillColor: 'rgba(0,0,0,0)' });
+            mapState.miniMap.geoObjects.add(border);
+        }).catch(err => console.error("Ошибка границы:", err));
+}
+
+function saveResults() {
+    const formData = new FormData();
+    formData.append('name', gameState.playerName);
+    formData.append('score', gameState.score);
+    formData.append('time', gameState.totalTime.toFixed(1));
+
+    fetch(CONFIG.SCRIPT_URL, { method: 'POST', body: formData })
+        .catch(err => console.error('Ошибка сохранения:', err));
+}
+
+function fetchRatingData() {
+    fetch(CONFIG.SCRIPT_URL)
+        .then(res => res.json())
+        .then(data => renderRatingTable(data.data))
+        .catch(() => document.getElementById('ratingTableContainer').innerHTML = 'Ошибка загрузки рейтинга');
+}
+
+function renderRatingTable(data) {
+    const container = document.getElementById('ratingTableContainer');
+    if (!data || data.length === 0) {
+        container.innerHTML = '<p>Рейтинг пока пуст.</p>';
+        return;
+    }
+
+    let html = '<table id="ratingTable"><tr>';
+    data[0].forEach(h => html += `<th>${h}</th>`);
+    html += '</tr>';
+
+    for (let i = 1; i < data.length; i++) {
+        html += '<tr>';
+        data[i].forEach(cell => html += `<td>${cell}</td>`);
+        html += '</tr>';
+    }
+    html += '</table>';
+    container.innerHTML = html;
+}
 </script>
 </body>
 </html>
