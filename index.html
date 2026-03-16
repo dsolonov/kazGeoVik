@@ -6,27 +6,36 @@
     <!-- Подключаем API Яндекс Карт -->
     <script src="https://api-maps.yandex.ru/2.1/?apikey=2bc4db1f-55d0-4cfe-bb41-e925007c5578&lang=ru_RU"></script>
     <style>
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: Arial, sans-serif; }
-        #panorama { width: 100%; height: 100%; }
-        
-        /* Миникарта */
-        #miniMapContainer {
-            position: absolute; top: 10px; right: 10px;
-            width: 250px; height: 180px; border: 3px solid #fff;
-            border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-            z-index: 10; transition: all 0.3s ease; background: #eee;
-        }
-        #miniMap { width: 100%; height: 100%; border-radius: 5px; }
-        #miniMapContainer.expanded { width: 80vw; height: 70vh; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: Arial, sans-serif; overflow: hidden; }
+        #panorama { width: 100%; height: 100%; position: absolute; z-index: 1; }
         
         /* Кнопки и UI */
         .btn { padding: 15px 30px; font-size: 20px; color: white; border: none; border-radius: 5px; cursor: pointer; z-index: 20; position: absolute; box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: background 0.2s; }
         .btn:disabled { background: #ccc !important; cursor: not-allowed; }
         
-        #miniMapToggle { top: -40px; right: 0; padding: 5px 10px; font-size: 14px; background-color: #333; }
-        #guessButton { bottom: 20px; right: 50%; transform: translateX(50%); background-color: #4CAF50; font-size: 24px; padding: 15px 50px; }
+        /* Кнопка карты и сам контейнер карты */
+        #miniMapToggle { top: 10px; right: 10px; padding: 10px 20px; font-size: 16px; background-color: #333; z-index: 30; }
+        #miniMapToggle:hover { background-color: #555; }
+        
+        #miniMapContainer {
+            position: absolute; top: 60px; right: 10px;
+            width: 250px; height: 180px; border: 3px solid #ccc;
+            border-radius: 5px; box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            z-index: 20; transition: all 0.3s ease; background: #fff;
+        }
+        #miniMap { width: 100%; height: 100%; border-radius: 2px; }
+        
+        /* Раскрытая карта */
+        #miniMapContainer.expanded { 
+            width: 80vw; height: 70vh; 
+            top: 50%; right: auto; left: 50%; 
+            transform: translate(-50%, -50%); 
+        }
+        
+        /* Игровые кнопки */
+        #guessButton { bottom: 20px; left: 50%; transform: translateX(-50%); background-color: #4CAF50; font-size: 24px; padding: 15px 50px; }
         #guessButton:hover { background-color: #45a049; }
-        #nextRoundButton { bottom: 80px; right: 50%; transform: translateX(50%); background-color: #2196F3; }
+        #nextRoundButton { bottom: 80px; left: 50%; transform: translateX(-50%); background-color: #2196F3; }
         
         /* Информационные панели */
         .panel { position: absolute; background: rgba(255, 255, 255, 0.95); padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 20; }
@@ -46,8 +55,9 @@
 
 <div id="panorama"></div>
 
-<div id="miniMapContainer" class="hidden">
-    <button id="miniMapToggle" class="btn">Увеличить карту</button>
+<!-- Миникарта и кнопка теперь всегда в DOM и не имеют display:none при старте -->
+<button id="miniMapToggle" class="btn">Развернуть карту</button>
+<div id="miniMapContainer">
     <div id="miniMap"></div>
 </div>
 
@@ -113,12 +123,12 @@ function initApp() {
 
     // Обработчики UI
     document.getElementById('startButton').addEventListener('click', handleStartGame);
-    document.getElementById('guessButton').addEventListener('click', handleGuess);
+    document.getElementById('guessButton').addEventListener('click', () => handleGuess(false));
     document.getElementById('nextRoundButton').addEventListener('click', startRound);
     
     // Клик по миникарте
     mapState.miniMap.events.add('click', (e) => {
-        if (!gameState.isRoundActive) return;
+        if (!gameState.isRoundActive) return; // Маркер можно ставить только во время раунда
 
         const coords = e.get('coords');
         if (mapState.playerMarker) {
@@ -126,14 +136,25 @@ function initApp() {
         } else {
             mapState.playerMarker = new ymaps.Placemark(coords, {}, { preset: 'islands#redDotIcon' });
             mapState.miniMap.geoObjects.add(mapState.playerMarker);
-            document.getElementById('guessButton').classList.remove('hidden');
+            document.getElementById('guessButton').classList.remove('hidden'); // Показываем кнопку "Угадать"
         }
     });
 
     // Логика разворачивания миникарты
     const miniMapContainer = document.getElementById('miniMapContainer');
-    document.getElementById('miniMapToggle').addEventListener('click', () => {
-        miniMapContainer.classList.toggle('expanded');
+    const miniMapToggle = document.getElementById('miniMapToggle');
+    let isExpanded = false;
+
+    miniMapToggle.addEventListener('click', () => {
+        isExpanded = !isExpanded;
+        if (isExpanded) {
+            miniMapContainer.classList.add('expanded');
+            miniMapToggle.textContent = 'Свернуть карту';
+        } else {
+            miniMapContainer.classList.remove('expanded');
+            miniMapToggle.textContent = 'Развернуть карту';
+        }
+        // Сообщаем API Яндекса, что размер контейнера изменился
         setTimeout(() => mapState.miniMap.container.fitToViewport(), 300);
     });
 }
@@ -156,13 +177,12 @@ async function handleStartGame() {
             .filter(line => line.includes(','))
             .map(line => line.split(',').map(Number));
 
-        document.getElementById('miniMapContainer').classList.remove('hidden');
         document.getElementById('timerPanel').classList.remove('hidden');
         
         startRound();
     } catch (error) {
         console.error(error);
-        alert('Не удалось загрузить локации.');
+        alert('Не удалось загрузить локации. Проверьте файл locations.txt');
     }
 }
 
@@ -188,13 +208,16 @@ function startRound() {
 }
 
 function loadPanorama(coords) {
-    if (mapState.panoramaPlayer) mapState.panoramaPlayer.destroy();
+    if (mapState.panoramaPlayer) {
+        mapState.panoramaPlayer.destroy();
+    }
     
     ymaps.panorama.locate(coords).then((panoramas) => {
         if (panoramas.length > 0) {
             mapState.panoramaPlayer = new ymaps.panorama.Player('panorama', panoramas[0], { controls:[] });
         } else {
             console.warn('Панорама не найдена:', coords);
+            alert('Панорама не найдена, пропускаем раунд.');
             startRound(); // Пропускаем, если нет панорамы
         }
     }).catch(err => {
@@ -223,12 +246,7 @@ function startTimer() {
 
 function handleTimeUp() {
     if (!gameState.isRoundActive) return;
-    
-    // Автоматический промах
-    if (!mapState.playerMarker) {
-        mapState.playerMarker = new ymaps.Placemark([0,0], {}, { visible: false }); // фиктивный маркер
-    }
-    handleGuess(true);
+    handleGuess(true); // Форсируем ответ со штрафом
 }
 
 function handleGuess(isTimeUp = false) {
@@ -250,7 +268,7 @@ function handleGuess(isTimeUp = false) {
         distance = ymaps.coordSystem.geo.getDistance(playerCoords, targetCoords);
         roundScore = calculateScore(distance);
         
-        // Рисуем линию и правильный ответ
+        // Рисуем правильный ответ и линию
         mapState.targetMarker = new ymaps.Placemark(targetCoords, {}, { preset: 'islands#greenDotIcon' });
         mapState.line = new ymaps.Polyline([playerCoords, targetCoords], {}, { strokeColor: '#0000FF', strokeWidth: 3 });
         mapState.miniMap.geoObjects.add(mapState.targetMarker);
@@ -261,19 +279,22 @@ function handleGuess(isTimeUp = false) {
     gameState.score += roundScore;
 
     const resultPanel = document.getElementById('resultPanel');
-    resultPanel.innerHTML = isTimeUp 
-        ? `<span style="color:red">Время вышло! Очков: 0</span>` 
-        : `Расстояние: <b>${Math.round(distance / 1000)} км</b><br>Очки за раунд: <b>${roundScore}</b><br>Общий счёт: <b>${gameState.score}</b><br>Время: ${guessTime.toFixed(1)} сек`;
+    if (isTimeUp) {
+        resultPanel.innerHTML = `<span style="color:red">Время вышло! Очков: 0</span><br>Общий счёт: <b>${gameState.score}</b>`;
+    } else {
+        resultPanel.innerHTML = `Расстояние: <b>${Math.round(distance / 1000)} км</b><br>Очки за раунд: <b>${roundScore}</b><br>Общий счёт: <b>${gameState.score}</b><br>Время: ${guessTime.toFixed(1)} сек`;
+    }
     
     resultPanel.classList.remove('hidden');
     document.getElementById('nextRoundButton').classList.remove('hidden');
 }
 
+// Формула очков
 function calculateScore(distanceMetres) {
     if (distanceMetres < 10000) return 10;       // до 10 км
     if (distanceMetres < 50000) return 5;        // до 50 км
     if (distanceMetres < 200000) return 3;       // до 200 км
-    return 0;
+    return 0;                                    // больше 200 км
 }
 
 function resetMap() {
@@ -285,10 +306,13 @@ function resetMap() {
 }
 
 function endGame() {
+    // Прячем игровой интерфейс
     document.getElementById('miniMapContainer').classList.add('hidden');
+    document.getElementById('miniMapToggle').classList.add('hidden');
     document.getElementById('timerPanel').classList.add('hidden');
     document.getElementById('resultPanel').classList.add('hidden');
     
+    // Показываем финал
     const finalModal = document.getElementById('finalMessage');
     document.getElementById('finalText').innerHTML = `Игра окончена!<br>${gameState.playerName}, ваш счет: ${gameState.score}`;
     finalModal.classList.remove('hidden');
@@ -307,7 +331,7 @@ function loadKazakhstanBorder() {
                 properties: { hintContent: "Казахстан" }
             }, { strokeColor: "#008000", strokeWidth: 3, fillColor: 'rgba(0,0,0,0)' });
             mapState.miniMap.geoObjects.add(border);
-        }).catch(err => console.error("Ошибка границы:", err));
+        }).catch(err => console.error("Ошибка загрузки границы:", err));
 }
 
 function saveResults() {
@@ -317,6 +341,8 @@ function saveResults() {
     formData.append('time', gameState.totalTime.toFixed(1));
 
     fetch(CONFIG.SCRIPT_URL, { method: 'POST', body: formData })
+        .then(res => res.json())
+        .then(data => console.log('Успешно сохранено:', data))
         .catch(err => console.error('Ошибка сохранения:', err));
 }
 
