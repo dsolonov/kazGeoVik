@@ -1,0 +1,184 @@
+:root {
+    color-scheme: light;
+    font-family: Arial, sans-serif;
+    color: #19352a;
+    background: #e8eee9;
+    --gap: 10px;
+}
+* { box-sizing: border-box; }
+html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; }
+button, input { font: inherit; }
+button { touch-action: manipulation; }
+button:focus-visible, input:focus-visible, [tabindex]:focus-visible { outline: 3px solid #e4a827; outline-offset: 3px; }
+.hidden { display: none !important; }
+#app {
+    position: fixed;
+    top: var(--viewport-top, 0px);
+    left: var(--viewport-left, 0px);
+    width: var(--viewport-width, 100%);
+    height: 100vh;
+    height: var(--viewport-height, 100dvh);
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap);
+    padding: max(var(--gap), env(safe-area-inset-top)) max(var(--gap), env(safe-area-inset-right)) max(var(--gap), env(safe-area-inset-bottom)) max(var(--gap), env(safe-area-inset-left));
+}
+.toolbar { display: flex; align-items: center; gap: 8px; flex: 0 0 auto; min-width: 0; }
+#roundPanel { flex: 1; text-align: center; font-weight: 700; overflow-wrap: anywhere; }
+.timer { background: white; padding: 8px 10px; border-radius: 8px; font-size: 21px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.button { min-height: 44px; min-width: 44px; border: 1px solid transparent; padding: 10px 16px; border-radius: 8px; font-weight: 700; cursor: pointer; line-height: 1.25; overflow-wrap: anywhere; }
+.primary { color: #fff; background: #16734b; }
+.primary:hover { background: #105a3a; }
+.secondary { color: #19352a; background: #fff; border-color: #b8c7bf; }
+.secondary:hover { background: #edf4ef; }
+.button:disabled { background: #dde4df; color: #56665d; cursor: default; }
+#playArea { position: relative; flex: 1 1 0; min-height: 0; min-width: 0; isolation: isolate; }
+#panorama { position: absolute; inset: 0; overflow: hidden; border-radius: 10px; background: #d2ded5; z-index: 0; }
+#miniMapContainer {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: min(300px, 75%);
+    height: min(240px, 55%);
+    min-height: min(175px, 100%);
+    display: flex;
+    flex-direction: column;
+    border: 2px solid #a6b8ac;
+    border-radius: 10px;
+    box-shadow: 0 3px 14px #19352a33;
+    background: #fff;
+    overflow: hidden;
+    z-index: 2;
+}
+#miniMapContainer.expanded { inset: 0; width: 100%; height: 100%; min-height: 0; }
+.map-header { flex: 0 0 auto; padding: 4px; background: #fff; z-index: 3; }
+#miniMapToggle { display: block; width: 100%; }
+.map-body { position: relative; flex: 1 1 0; min-height: 0; overflow: hidden; }
+#miniMap { position: absolute; inset: 0; touch-action: none; z-index: 0; }
+.map-zoom { position: absolute; top: 6px; left: 6px; display: flex; flex-direction: column; gap: 4px; z-index: 2; }
+.map-zoom .button { width: 44px; height: 44px; padding: 0; font-size: 25px; box-shadow: 0 2px 6px #19352a22; }
+#gameActions { flex: 0 0 auto; display: flex; flex-direction: column; gap: 6px; max-height: 48%; overflow: auto; }
+#gameActions > .button { flex-shrink: 0; width: 100%; max-width: 640px; align-self: center; }
+#statusMessage { margin: 0; text-align: center; font-size: 14px; line-height: 1.35; }
+#statusMessage:empty { display: none; }
+#errorDetails { width: 100%; max-width: 640px; align-self: center; background: #fff; border-radius: 8px; padding: 10px; }
+#errorDetails summary { cursor: pointer; font-weight: 700; }
+#errorText { white-space: pre-wrap; overflow-wrap: anywhere; max-height: 180px; overflow: auto; font-size: 12px; user-select: text; }
+#resultPanel { width: 100%; max-width: 640px; align-self: center; background: #fff; border-radius: 8px; padding: 10px 12px; }
+.result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 14px; font-size: 14px; line-height: 1.4; }
+.result-grid p { margin: 0; }
+.time-up { margin: 0 0 6px; color: #a12727; font-weight: 700; }
+.dialog {
+    --dialog-gap: max(12px, env(safe-area-inset-top), env(safe-area-inset-right), env(safe-area-inset-bottom), env(safe-area-inset-left));
+    position: fixed;
+    top: calc(var(--viewport-top, 0px) + var(--viewport-height, 100vh) / 2);
+    left: calc(var(--viewport-left, 0px) + var(--viewport-width, 100vw) / 2);
+    right: auto;
+    bottom: auto;
+    transform: translate(-50%, -50%);
+    padding: 0;
+    width: min(560px, calc(var(--viewport-width, 100vw) - 2 * var(--dialog-gap)));
+    max-width: calc(var(--viewport-width, 100vw) - 2 * var(--dialog-gap));
+    max-height: calc(100vh - 24px);
+    max-height: calc(var(--viewport-height, 100dvh) - 2 * var(--dialog-gap));
+    margin: 0;
+    border: 1px solid #c7d4cc;
+    border-radius: 14px;
+    color: #19352a;
+    box-shadow: 0 16px 60px #10271d44;
+    overflow: hidden;
+}
+.dialog[open] { display: flex; flex-direction: column; }
+.dialog::backdrop { background: #11261dcc; }
+.dialog-header, .dialog-footer { display: flex; align-items: center; gap: 12px; padding: 16px 20px; flex: 0 0 auto; }
+.dialog-header { border-bottom: 1px solid #dae3dd; }
+.dialog-header h1, .dialog-header h2 { margin: 0; flex: 1; min-width: 0; font-size: 23px; overflow-wrap: anywhere; }
+.dialog-content { overflow: auto; overscroll-behavior: contain; padding: 16px 20px; min-height: 0; line-height: 1.55; }
+.dialog-content > :first-child { margin-top: 0; }
+.dialog-content > :last-child { margin-bottom: 0; }
+.dialog-footer { border-top: 1px solid #dae3dd; flex-wrap: wrap; }
+.dialog-content h3 { margin: 24px 0 8px; font-size: 18px; }
+.dialog-content li { margin-bottom: 10px; }
+.dialog-content ul, .dialog-content ol { padding-left: 24px; }
+#playerForm { display: flex; flex-direction: column; gap: 10px; }
+#playerForm label { font-weight: 700; }
+#playerName { width: 100%; min-height: 48px; padding: 10px 12px; font-size: 16px; border: 1px solid #a6b8ac; border-radius: 8px; }
+#setupStatus, #saveStatus { font-size: 14px; overflow-wrap: anywhere; }
+#setupStatus { margin: 0; }
+.help-dialog { width: min(660px, calc(var(--viewport-width, 100vw) - 2 * var(--dialog-gap))); }
+.final-dialog { width: min(700px, calc(var(--viewport-width, 100vw) - 2 * var(--dialog-gap))); }
+#finalText { white-space: pre-line; overflow-wrap: anywhere; font-weight: 700; }
+#ratingTableContainer { overflow: auto; max-height: 35vh; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+caption { text-align: left; padding-bottom: 8px; }
+th, td { padding: 9px; border: 1px solid #cedbd1; text-align: left; overflow-wrap: anywhere; }
+th { background: #edf4ef; }
+#ratingTable th { position: sticky; top: 0; }
+#ratingTable td:first-child { width: 50px; }
+.highlight-row { background: #fff2bd; font-weight: 700; }
+@media (max-width: 380px) {
+    :root { --gap: 6px; }
+    .toolbar { gap: 5px; font-size: 14px; }
+    .button { padding: 10px 12px; }
+    .dialog-header, .dialog-content, .dialog-footer { padding: 12px; }
+    .dialog-header h1, .dialog-header h2 { font-size: 20px; }
+}
+@media (max-height: 500px) {
+    :root { --gap: 6px; }
+    #miniMapContainer { width: min(320px, 48%); height: 100%; min-height: 0; }
+    #miniMapContainer.expanded { width: 100%; }
+    .map-zoom { flex-direction: row; }
+    .dialog-header, .dialog-content, .dialog-footer { padding: 10px 14px; }
+    #resultPanel { padding: 6px 10px; }
+    .result-grid { gap: 2px 12px; }
+}
+/* Телефоны: свёрнутая карта занимает только место кнопки. */
+@media (max-width: 768px),
+       (max-height: 500px) and (pointer: coarse) {
+
+  #miniMapContainer:not(.expanded) {
+    width: min(210px, 100%);
+    height: auto;
+    min-height: 0;
+  }
+
+  #miniMapContainer:not(.expanded) .map-body {
+    display: none;
+  }
+
+  #miniMapContainer.expanded {
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+  }
+}
+
+/* Кнопка «Открыть в Яндекс Картах» внутри панорамы */
+#panorama [class$="-panorama-gotoymaps"] {
+    display: none !important;
+}
+
+/* Располагаем кнопки подсказок по центру */
+#gameActions .nq-hint-buttons {
+    justify-content: center;
+    gap: 8px;
+}
+
+/* Уменьшаем кнопки и отключаем растягивание */
+#gameActions .nq-hint-buttons button {
+    flex: 0 1 auto;
+    width: auto;
+    max-width: 100%;
+    min-height: 36px;
+    padding: 6px 12px;
+    font-size: 13px;
+    line-height: 1.2;
+}
+
+/* Удобная высота для нажатия пальцем */
+@media (pointer: coarse) {
+    #gameActions .nq-hint-buttons button {
+        min-height: 44px;
+    }
+}
