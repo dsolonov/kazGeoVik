@@ -1,0 +1,449 @@
+<!doctype html>
+<html lang="kk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="referrer" content="no-referrer">
+<meta name="robots" content="noindex,nofollow">
+<title>NomadQuest · Локацияларды басқару</title>
+<style>
+:root{font-family:system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#203b31;background:#f4f6f2;--green:#176b50;--border:#d8e1d9;--muted:#607268;--red:#a32b2b;--amber:#876015}
+*{box-sizing:border-box}body{margin:0}button,input,textarea,select{font:inherit}button,a,input,textarea,select{-webkit-tap-highlight-color:transparent}button{cursor:pointer}button:disabled{cursor:default;opacity:.48}button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible,summary:focus-visible{outline:3px solid #d69833;outline-offset:3px}[hidden]{display:none!important}
+button,.button{min-height:40px;border:1px solid var(--border);border-radius:9px;background:#fff;color:inherit;padding:8px 13px;font-size:14px;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:7px}button:hover:not(:disabled),.button:hover{background:#edf3ed}.primary{background:var(--green);border-color:var(--green);color:white}.primary:hover:not(:disabled){background:#12563f}.danger{color:var(--red)}.quiet{background:transparent}.small{min-height:32px;padding:4px 9px;font-size:12px}
+.topbar{background:#fff;border-bottom:1px solid var(--border);padding:17px clamp(16px,3vw,40px);display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}.brand{display:flex;align-items:center;gap:12px}.logo{display:grid;place-items:center;background:#176b50;color:#fff;width:42px;height:42px;border-radius:12px;font-size:23px;font-weight:800}.brand b{font-size:21px;letter-spacing:-.7px}.brand p{margin:2px 0 0;font-size:12px;color:var(--muted)}.toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.state{font-size:12px;color:var(--muted);margin-right:6px}.state.dirty{color:var(--amber)}
+.main{max-width:1560px;margin:0 auto;padding:24px clamp(14px,3vw,40px) 35px}.filebar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:18px}.pills{display:flex;gap:8px;flex-wrap:wrap}.pill{font-size:12px;padding:6px 10px;border:1px solid var(--border);border-radius:30px;background:white}.pill.ready{background:#e9f3ec;color:#245a41;border-color:#c5dccc}.pill.pending{background:#fff5dd;border-color:#ecddb4;color:#715417}.notice{border:1px solid var(--border);background:white;border-radius:10px;padding:12px 15px;font-size:14px;line-height:1.55;margin:0 0 16px;overflow-wrap:anywhere}.notice.error{color:#892f2d;background:#fff1f0;border-color:#e8bcb8}.notice.success{background:#e9f3ed;border-color:#b5d9c0}.notice.warning{background:#fff8e6;border-color:#e6d5a8;color:#715417}
+.welcome{background:#fff;border:1px solid var(--border);border-radius:18px;padding:clamp(24px,5vw,64px);max-width:850px;margin:45px auto}.eyebrow{font-size:11px;letter-spacing:1.6px;font-weight:700;color:var(--green);text-transform:uppercase}.welcome h1{font-size:clamp(27px,4vw,39px);line-height:1.15;letter-spacing:-1.2px;margin:16px 0}.welcome p{color:var(--muted);line-height:1.7;max-width:630px}.welcome .toolbar{margin-top:25px}.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:34px;padding-top:25px;border-top:1px solid var(--border)}.steps b{display:block;font-size:14px;margin:8px 0}.steps p{font-size:13px;line-height:1.5;margin:0}.step-number{font-size:12px;color:var(--green);font-weight:700}.dropover .welcome,.dropover .filebar{outline:3px dashed var(--green);outline-offset:5px}
+.workspace{display:grid;grid-template-columns:290px minmax(0,1fr);gap:22px;align-items:start}.sidebar{border:1px solid var(--border);border-radius:14px;background:white;overflow:hidden;position:sticky;top:16px}.sidehead{padding:18px 16px 12px;border-bottom:1px solid var(--border)}.sidehead h2{font-size:16px;margin:0 0 12px}.sidehead input{width:100%;min-height:38px;padding:8px 10px}.sidehead select{margin-top:8px;width:100%;padding:7px 9px;min-height:35px;font-size:13px}.summary{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-top:13px}.list{max-height:calc(100vh - 350px);min-height:200px;overflow:auto;padding:7px}.item{display:block;width:100%;text-align:left;border-color:transparent;padding:11px;margin:2px 0;min-height:65px;font-weight:400}.item[aria-current=true]{background:#e9f2eb;border-color:#bed6c4}.item strong{display:block;font-size:13px;font-weight:650;line-height:1.5;overflow-wrap:anywhere}.item small{display:block;font-size:11px;color:var(--muted);margin-top:3px}.item .tag{font-size:10px;color:var(--green);margin-right:5px}.item .tag.warn{color:var(--amber)}.sidefoot{padding:12px;border-top:1px solid var(--border)}.sidefoot button{width:100%}.empty-list{font-size:13px;padding:15px;color:var(--muted)}
+.editor{min-width:0}.editor-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin:2px 0 17px}.editor-top h1{font-size:24px;line-height:1.25;letter-spacing:-.6px;margin:5px 0 6px;overflow-wrap:anywhere}.editor-top p{font-size:12px;color:var(--muted);margin:0}.editor-top .toolbar{justify-content:flex-end}.card{background:#fff;border:1px solid var(--border);border-radius:13px;margin-bottom:16px;padding:21px}.card h2{font-size:16px;margin:0 0 7px}.intro{font-size:12px;color:var(--muted);line-height:1.6;margin:0 0 18px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}.language-title{font-size:12px;letter-spacing:.4px;font-weight:750;color:var(--green);margin-bottom:15px}.field{display:block;margin-bottom:14px;font-size:13px;font-weight:600}.field>span{display:block;margin-bottom:7px}.field input,.field textarea{width:100%;margin-top:0;display:block}.field textarea{min-height:100px;resize:vertical;font-weight:400;line-height:1.5}.field .short{min-height:74px}.field .long{min-height:150px}input,textarea,select{border:1px solid #c9d5cc;background:#fdfefd;color:#203b31;border-radius:8px;padding:10px 11px;font-size:14px}input:focus,textarea:focus{border-color:var(--green)}.field:last-child{margin-bottom:0}.helper{display:block;color:var(--muted);font-size:11px;line-height:1.5;font-weight:400;margin-top:6px}.helper.exceeded{color:var(--amber)}.check{display:flex;align-items:center;gap:9px;font-weight:600;font-size:13px;line-height:1.5}.check input{width:18px;height:18px;accent-color:var(--green)}.coord-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:18px}.coords{display:grid;grid-template-columns:1fr 1fr auto;align-items:end;gap:12px}.coords .field{margin:0}.coords a{margin-bottom:1px}.paste-coords{display:flex;gap:8px;margin-top:12px}.paste-coords input{min-width:0;flex:1}.paste-coords button{flex-shrink:0}.coord-note{font-size:12px;color:var(--muted);margin:14px 0 0;line-height:1.55}.hint-heading{display:flex;align-items:center;gap:7px;margin:17px 0 10px;font-size:13px;font-weight:700}.cost{font-size:11px;color:var(--amber);background:#fff5de;border-radius:20px;padding:3px 8px}.divider{height:1px;background:var(--border);margin:18px 0}.details{padding:0}.details>summary{padding:19px 21px;cursor:pointer;font-weight:650;font-size:14px}.details-body{padding:0 21px 21px}.extras{white-space:pre-wrap;overflow-wrap:anywhere;max-height:220px;overflow:auto;background:#f4f6f2;padding:12px;border-radius:8px;font-size:12px}fieldset{border:0;padding:0;margin:0;min-width:0}.editor-bottom{display:flex;justify-content:space-between;align-items:center;gap:12px;color:var(--muted);font-size:12px;margin-bottom:20px}.link{color:var(--green)}
+dialog{border:1px solid var(--border);border-radius:16px;padding:0;color:inherit;max-width:calc(100vw - 24px);width:700px;max-height:calc(100dvh - 32px);box-shadow:0 22px 80px #0c2c2733}dialog::backdrop{background:#15352f99}dialog[open]{display:flex;flex-direction:column}.dialog-head{padding:20px 23px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px}.dialog-head h2{font-size:19px;margin:0}.dialog-body{padding:23px;overflow:auto;min-height:0;line-height:1.6}.dialog-foot{padding:16px 23px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap}.dialog-body p{margin:0 0 12px}.dialog-body p:last-child{margin-bottom:0}.preview-section+.preview-section{border-top:1px solid var(--border);margin-top:24px;padding-top:20px}.preview-section h3{font-size:21px;margin:6px 0 9px}.preview-section p{white-space:pre-wrap;overflow-wrap:anywhere}.preview-section .preview-hint{background:#f0f5f0;padding:11px 13px;border-radius:8px;margin-top:10px;font-size:13px}.round-row{display:flex;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--border)}.round-row>span{flex:1;min-width:0;font-size:13px;overflow-wrap:anywhere}.round-row b{display:block}.round-row small{color:var(--muted);font-size:11px}.round-row .toolbar{flex-wrap:nowrap}.export-options{display:grid;gap:10px;margin-top:20px}.export-options button{justify-content:flex-start;padding:14px}.footnote{font-size:12px;color:var(--muted);line-height:1.6}.footer{font-size:12px;text-align:center;color:var(--muted);margin-top:20px}.mono{font-family:ui-monospace,Consolas,monospace}
+@media(max-width:1000px){.workspace{grid-template-columns:240px minmax(0,1fr);gap:15px}.grid{gap:14px}.coords{grid-template-columns:1fr 1fr}.coords a{grid-column:1/-1;justify-self:start}.card{padding:17px}.editor-top{flex-direction:column}.toolbar .state{display:none}}
+@media(max-width:700px){.main{padding-top:16px}.topbar{padding:14px}.topbar>.toolbar{width:100%}.topbar>.toolbar>.primary{margin-left:auto}.brand b{font-size:19px}.workspace{grid-template-columns:1fr}.sidebar{position:static}.list{max-height:190px;min-height:0}.sidehead{padding:14px}.sidehead h2{margin-bottom:10px}.sidefoot{padding:9px}.grid{grid-template-columns:1fr;gap:24px}.language-title{border-bottom:1px solid var(--border);padding-bottom:9px}.card{padding:18px 15px}.coords{gap:10px}.filebar{gap:10px}.welcome{margin:8px 0;padding:25px}.steps{grid-template-columns:1fr;gap:16px;margin-top:23px}.steps b{margin:4px 0}.paste-coords{flex-wrap:wrap}.paste-coords input{flex-basis:100%}.paste-coords button{width:100%}.editor-top h1{font-size:22px}.dialog-body{padding:18px}.dialog-head{padding:15px 18px}.round-row .toolbar{gap:3px}.round-row button{padding:7px}.editor-bottom{flex-wrap:wrap}.filebar .toolbar button{font-size:12px}}
+@media(pointer:coarse){button,.button{min-height:44px}.small{min-height:40px}}
+.auth-panel{max-width:470px;margin:55px auto;padding:32px}.auth-panel h1{font-size:27px}.auth-panel form{margin-top:22px}.auth-panel .primary{width:100%}.auth-panel .notice{font-size:13px}.auth-panel .field{margin-bottom:17px}@media(max-width:550px){.auth-panel{margin:25px 14px;padding:25px}}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand"><div class="logo" aria-hidden="true">N</div><div><b>NomadQuest</b><p>Локацияларды басқару</p></div></div>
+  <div class="toolbar" id="adminTools" hidden><span id="saveState" class="state">Файлдар ашылған жоқ</span><button id="helpButton" type="button">Нұсқаулық</button><button id="openButton" type="button">Файлдарды ашу</button><button id="exportButton" type="button" disabled>Көшірме жүктеу ↓</button><button id="serverSave" type="button" class="primary" disabled>Сақтау</button><button id="passwordButton" type="button" class="small">Құпиясөз</button><button id="logoutButton" type="button" class="small">Шығу</button></div>
+</header>
+<section id="authPanel" class="welcome auth-panel" aria-labelledby="authTitle">
+  <div class="eyebrow">NomadQuest · Басқару</div>
+  <h1 id="authTitle">Админкаға кіру</h1>
+  <p id="authDescription">Локацияларды өңдеу үшін құпиясөзді енгізіңіз.</p>
+  <p id="authMessage" class="notice" role="status" aria-live="polite">Сервермен байланыс орнатылуда…</p>
+  <form id="authForm">
+    <label id="setupCodeField" class="field" hidden><span>Белсендіру коды</span><input id="setupCode" name="code" type="text" autocomplete="off" spellcheck="false"><small class="helper">Алғашқы баптауға арналған код INSTALL.txt файлында берілген.</small></label>
+    <label class="field"><span id="passwordLabel">Құпиясөз</span><input id="authPassword" name="password" type="password" autocomplete="current-password" required></label>
+    <label id="confirmField" class="field" hidden><span>Құпиясөзді қайталаңыз</span><input id="authConfirm" name="confirm" type="password" autocomplete="new-password"></label>
+    <button id="authSubmit" class="primary" type="submit" disabled>Кіру</button>
+  </form>
+</section>
+<main class="main" id="editorShell" hidden>
+  <input id="fileInput" type="file" accept=".json,.txt,application/json,text/plain" multiple hidden>
+  <div class="filebar"><div class="pills"><span id="infoFile" class="pill pending">JSON · ашылмаған</span><span id="listFile" class="pill pending">TXT · ашылмаған</span></div><div class="toolbar"><button id="siteButton" type="button" hidden>Серверден оқу</button><button id="backupsButton" type="button" class="small">Резервтік көшірмелер</button><button id="newSetButton" type="button" class="quiet small">Жаңа жинақ</button><button id="newListButton" type="button" class="small" hidden>Жаңа ойын тізімі</button><button id="orderButton" type="button" class="small" disabled>Кезеңдер реті</button></div></div>
+  <div id="message" class="notice" role="status" aria-live="polite" hidden></div>
+  <section id="welcome" class="welcome">
+    <div class="eyebrow">Координат · Көмек · Анықтама</div>
+    <h1>Әр локацияның<br>деректерін бір жерден өңдеңіз.</h1>
+    <p>«Серверден оқу» арқылы ағымдағы деректерді ашыңыз. Атауларды, координаттарды, көмектерді және анықтаманы өзгертіп, «Сақтау» түймесін басыңыз. Жергілікті файлдардан импорттауға да болады.</p>
+    <div class="toolbar"><button id="welcomeOpen" class="primary" type="button">Екі файлды таңдау</button></div>
+    <div class="steps"><div><span class="step-number">01 / АШУ</span><b>Ойын файлдарын таңдаңыз</b><p>Екі файлды бірден немесе кезекпен ашуға болады.</p></div><div><span class="step-number">02 / ӨҢДЕУ</span><b>Деректерді өзгертіңіз</b><p>Қазақша және орысша мәтіндер қатар көрсетіледі.</p></div><div><span class="step-number">03 / САҚТАУ</span><b>Өзгерістерді серверде сақтаңыз</b><p>«Сақтау» екі деректер файлын серверде жаңартады.</p></div></div>
+  </section>
+  <div id="workspace" class="workspace" hidden>
+    <aside class="sidebar"><div class="sidehead"><h2>Локациялар</h2><input id="search" type="search" placeholder="Атауы, мекенжайы, координаты…" aria-label="Локацияны іздеу"><select id="filter" aria-label="Локация сүзгісі"><option value="all">Барлық локациялар</option><option value="active">Ойынға енгізілген</option><option value="inactive">Ойынға енгізілмеген</option><option value="incomplete">Мәтіні толық емес</option></select><div class="summary"><span id="totalCount">0 локация</span><span id="activeCount">0 кезең</span></div></div><nav id="locationList" class="list" aria-label="Локациялар тізімі"></nav><div class="sidefoot"><button id="addButton" type="button">＋ Локация қосу</button></div></aside>
+    <section class="editor">
+      <div id="noSelection" class="card" hidden>Локацияны таңдаңыз немесе жаңасын қосыңыз.</div>
+      <form id="editorForm" novalidate>
+        <div class="editor-top"><div><div class="eyebrow" id="entryNumber">ЛОКАЦИЯ</div><h1 id="entryTitle">Жаңа локация</h1><p>Мәтіндер мен координаттар осы бетте өңделеді.</p></div><div class="toolbar"><button id="previewButton" type="button">Алдын ала көру</button><button id="deleteButton" type="button" class="danger quiet">Жою</button></div></div>
+        <fieldset id="entryFields">
+          <section class="card"><div class="coord-head"><h2>Орны және ойынға қатысуы</h2><label class="check"><input id="active" type="checkbox">Ойынға енгізу</label></div><div class="coords"><label class="field"><span>Ендік</span><input id="latitude" type="text" inputmode="decimal" placeholder="51.314597" required autocomplete="off"></label><label class="field"><span>Бойлық</span><input id="longitude" type="text" inputmode="decimal" placeholder="72.784992" required autocomplete="off"></label><a id="mapLink" class="button" target="_blank" rel="noopener noreferrer">Картадан көру ↗</a></div><div class="paste-coords"><input id="coordinatePair" type="text" placeholder="51.314597, 72.784992" aria-label="Ендік пен бойлықты бірге енгізу"><button id="applyCoords" type="button">Координатты қою</button></div><p class="coord-note">Алдымен ендік, содан кейін бойлық. Координатты өзгерткенде, осы локацияның ойын тізіміндегі нүктелері де жаңартылады.</p></section>
+          <section class="card"><h2>Кезеңнен кейінгі анықтама</h2><p class="intro">Ойыншы жауап бергеннен кейін атау, мекенжай және осы қысқа сипаттама көрсетіледі.</p><div class="grid">
+            <div lang="kk"><div class="language-title">ҚАЗАҚША</div><label class="field"><span>Локация атауы</span><input data-path="name.kk" maxlength="500"></label><label class="field"><span>Мекенжайы</span><input data-path="address.kk" maxlength="1000"></label><label class="field"><span>Қысқа сипаттама</span><textarea data-path="description.kk" class="long" maxlength="20000"></textarea><small id="countKk" class="helper">Сөз саны: 0 · ұсыныс: 30 сөз</small></label></div>
+            <div lang="ru"><div class="language-title" lang="kk">ОРЫСША</div><label class="field"><span lang="kk">Локация атауы</span><input data-path="name.ru" maxlength="500"></label><label class="field"><span lang="kk">Мекенжайы</span><input data-path="address.ru" maxlength="1000"></label><label class="field"><span lang="kk">Қысқа сипаттама</span><textarea data-path="description.ru" class="long" maxlength="20000"></textarea><small id="countRu" class="helper" lang="kk">Сөз саны: 0 · ұсыныс: 30 сөз</small></label></div>
+          </div></section>
+          <section class="card"><h2>Ойын кезіндегі көмек</h2><p class="intro">Көмекті қосу үшін оның екі тілдегі мәтінін толтырыңыз. Мәтіннің бір тілі бос болса, ойын сол көмекті ұсынбайды.</p><div class="hint-heading">1-көмек · Өңір <span class="cost">−1 ұпай</span></div><div class="grid"><label class="field"><span>Қазақша</span><textarea data-path="hints.region.kk" class="short" lang="kk" maxlength="5000" placeholder="Сіз Солтүстік Қазақстан облысындасыз."></textarea></label><label class="field"><span>Орысша</span><textarea data-path="hints.region.ru" class="short" lang="ru" maxlength="5000" placeholder="Вы находитесь в Северо-Казахстанской области."></textarea></label></div><div class="divider"></div><div class="hint-heading">2-көмек · Елді мекен немесе оның маңы <span class="cost">−2 ұпай</span></div><div class="grid"><label class="field"><span>Қазақша</span><textarea data-path="hints.settlement.kk" class="short" lang="kk" maxlength="5000" placeholder="Сіз Петропавл қаласындасыз."></textarea></label><label class="field"><span>Орысша</span><textarea data-path="hints.settlement.ru" class="short" lang="ru" maxlength="5000" placeholder="Вы находитесь в Петропавловске."></textarea></label></div></section>
+          <details class="card details"><summary>Қосымша деректер</summary><div class="details-body"><p class="intro">Толық сипаттама мен ескертпелер файлда сақталады. Ойынның қазіргі терезесінде жоғарыдағы қысқа сипаттама көрсетіледі.</p><div class="grid"><div><label class="field"><span>Толық сипаттама · Қазақша</span><textarea data-path="descriptionFull.kk" class="long" lang="kk" maxlength="30000"></textarea></label><label class="field"><span>Ескертпе · Қазақша</span><textarea data-path="dataNotes.kk" lang="kk" maxlength="10000"></textarea></label></div><div><label class="field"><span>Толық сипаттама · Орысша</span><textarea data-path="descriptionFull.ru" class="long" lang="ru" maxlength="30000"></textarea></label><label class="field"><span>Ескертпе · Орысша</span><textarea data-path="dataNotes.ru" lang="ru" maxlength="10000"></textarea></label></div></div><div class="divider"></div><label class="field"><span>Баламалы координаттар (aliases)</span><textarea id="aliases" class="mono" placeholder="Әр жолға бір нүкте: ендік, бойлық"></textarea><small class="helper">Бір объектіге тиесілі басқа бастапқы нүктелер. Әр жолда екі сан; бар файлдағы биіктіктің үшінші мәні де сақталады.</small></label><details><summary>Өзге сақталатын өрістер</summary><pre id="extraData" class="extras"></pre></details></div></details>
+        </fieldset>
+        <div class="editor-bottom"><span>Дайын болғанда «Сақтау» түймесін басыңыз.</span><button id="duplicateButton" type="button" class="small">Локацияның көшірмесін жасау</button></div>
+      </form>
+    </section>
+  </div>
+  <footer class="footer">Өзгерістер «Сақтау» түймесін басқаннан кейін серверге жазылады. Әр сақтаудың алдында резервтік көшірме жасалады.</footer>
+</main>
+<dialog id="modal" aria-labelledby="modalTitle"><div class="dialog-head"><h2 id="modalTitle"></h2><button id="closeModal" type="button" aria-label="Терезені жабу">Жабу ×</button></div><div id="modalBody" class="dialog-body"></div><div class="dialog-foot"><button id="modalDone" type="button">Жабу</button></div></dialog>
+<noscript>Бұл редакторды пайдалану үшін браузерде JavaScript қосыңыз.</noscript>
+<script>
+'use strict';
+// NomadQuest editor. All server mutations require an authenticated PHP session.
+const $ = id => document.getElementById(id);
+const clone = value => JSON.parse(JSON.stringify(value));
+const own = (obj, key) => Object.prototype.hasOwnProperty.call(obj, key);
+const isObject = value => value !== null && typeof value === 'object' && !Array.isArray(value);
+const state = {doc:null, rounds:null, index:-1, dirty:false, pending:false, busy:false, original:null, baseline:{}, exports:new Set()};
+const server = {authenticated:false, needsSetup:false, csrf:'', revision:null, authBusy:false};
+const fields = [...document.querySelectorAll('[data-path]')];
+function el(tag, text, className) { const n=document.createElement(tag); if(text!==undefined)n.textContent=text; if(className)n.className=className; return n; }
+function button(text, action, className='') { const n=el('button',text,className);n.type='button';n.addEventListener('click',action);return n; }
+function notify(text, kind='') { $('message').textContent=text;$('message').className='notice '+kind;$('message').hidden=false; }
+function problem(error) { notify(error.message || String(error),'error'); }
+function entry() { return state.doc?.locations[state.index] || null; }
+function readPath(obj,path) { return path.split('.').reduce((v,key)=>isObject(v)&&own(v,key)?v[key]:undefined,obj); }
+function writePath(obj,path,value) { const bits=path.split('.');let cur=obj;for(const bit of bits.slice(0,-1)){if(!isObject(cur[bit]))cur[bit]={};cur=cur[bit];}cur[bits.at(-1)]=value; }
+function number(text) { const t=String(text).trim().replace(',','.');if(!/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?$/i.test(t))throw Error('Координат сан болуы керек.');const n=Number(t);if(!Number.isFinite(n))throw Error('Координат дұрыс емес.');return n; }
+function coord(p,label='Координат') { if(!Array.isArray(p)||p.length<2||p.length>3||!p.every(v=>typeof v==='number'&&Number.isFinite(v)))throw Error(label+': екі саннан тұратын координат қажет.');if(Math.abs(p[0])>90||Math.abs(p[1])>180)throw Error(label+': ендік −90…90, бойлық −180…180 аралығында болуы керек.');return p; }
+function key(p) { return coord(p).slice(0,2).map(n=>n.toFixed(6)).join(','); }
+function keys(item) { return new Set([item.coordinates,...(item.aliases||[])].map(key)); }
+function bilingual(value) { return ['kk','ru'].every(l=>typeof value?.[l]==='string'&&value[l].trim()); }
+function complete(item) { return ['name','address','description'].every(f=>bilingual(item[f]))&&bilingual(item.hints?.region)&&bilingual(item.hints?.settlement); }
+function active(item) { const set=keys(item);return (state.rounds||[]).some(p=>set.has(key(p))); }
+function title(item) { return item.name?.kk?.trim() || item.name?.ru?.trim() || 'Атауы енгізілмеген'; }
+function parseDoc(text) { let value;try{value=JSON.parse(text.replace(/^\uFEFF/,''));}catch{throw Error('JSON ашылмады. Жақшалар мен үтірлерді тексеріңіз.');}validateDoc(value);return value; }
+function validateDoc(doc) {
+  if(!isObject(doc)||doc.version!==1||!Array.isArray(doc.locations))throw Error('locations-info.json ішінде version: 1 және locations тізімі болуы керек.');
+  if(doc.locations.length>2000)throw Error('Ең көбі 2000 локацияға қолдау көрсетіледі.');
+  const index=new Map();
+  doc.locations.forEach((e,i)=>{
+    const label=(i+1)+'-локация';if(!isObject(e))throw Error(label+': нысан пішімі дұрыс емес.');coord(e.coordinates,label);
+    if(e.aliases!==undefined&&(!Array.isArray(e.aliases)||e.aliases.length>100))throw Error(label+': aliases тізімі дұрыс емес.');
+    for(const p of [e.coordinates,...(e.aliases||[])]){const k=key(coord(p,label));if(index.has(k)&&index.get(k)!==i)throw Error('Координат қайталанады: '+k+' ('+(index.get(k)+1)+' және '+(i+1)+'-локациялар).');index.set(k,i);}
+    const check=(v,f)=>{if(!isObject(v)||['kk','ru'].some(l=>v[l]!==undefined&&typeof v[l]!=='string'))throw Error(label+': '+f+' ішінде kk және ru мәтіндері болуы керек.');};
+    for(const f of ['name','address','description','descriptionFull','dataNotes'])if(e[f]!==undefined)check(e[f],f);
+    if(e.hints!==undefined){if(!isObject(e.hints))throw Error(label+': hints нысан болуы керек.');for(const f of ['region','settlement'])if(e.hints[f]!==undefined)check(e.hints[f],'hints.'+f);}
+  });return index;
+}
+function parseList(text) { const result=text.replace(/^\uFEFF/,'').split(/\r?\n/).map(s=>s.trim()).filter(Boolean).map((line,i)=>{const parts=line.split(',');if(parts.length!==2||parts.some(p=>!p.trim()))throw Error('locations.txt: '+(i+1)+'-жолда ендік, бойлық жұбы қажет.');return coord(parts.map(number),(i+1)+'-жол');}); if(result.length>5000)throw Error('Кезеңдер саны 5000-нан аспауы керек.');return result; }
+function parseAliases(text) { return text.split(/\r?\n/).map(x=>x.trim()).filter(Boolean).map((s,i)=>coord(s.split(',').map(number),'Баламалы координат, '+(i+1)+'-жол')); }
+function blank(p=[48,68]) { return {coordinates:p,name:{kk:'',ru:''},address:{kk:'',ru:''},description:{kk:'',ru:''},hints:{region:{kk:'',ru:''},settlement:{kk:'',ru:''}}}; }
+function addMissing(doc,rounds) { const index=validateDoc(doc);let added=0;for(const p of rounds||[]){const k=key(p);if(!index.has(k)){index.set(k,doc.locations.length);doc.locations.push(blank([...p]));added++;}}validateDoc(doc);return added; }
+function changed() { state.dirty=true;state.exports.clear();updateStatus(); }
+function updateStatus() {
+  const hasDoc=!!state.doc,hasRounds=state.rounds!==null;
+  $('saveState').textContent=state.busy?'Операция орындалуда…':state.dirty?'Сақталмаған өзгерістер бар':hasDoc?'Редактор дайын':'Файлдар ашылған жоқ';$('saveState').classList.toggle('dirty',state.dirty);
+  $('infoFile').textContent=hasDoc?'JSON · '+state.doc.locations.length+' локация':'JSON · ашылмаған';$('infoFile').className='pill '+(hasDoc?'ready':'pending');
+  $('listFile').textContent=hasRounds?'TXT · '+state.rounds.length+' кезең':'TXT · ашылмаған';$('listFile').className='pill '+(hasRounds?'ready':'pending');
+  $('totalCount').textContent=(state.doc?.locations.length||0)+' локация';$('activeCount').textContent=(state.rounds?.length||0)+' кезең';
+  $('exportButton').disabled=!hasDoc||state.busy;$('orderButton').disabled=!hasDoc||!hasRounds||!state.rounds.length;$('newListButton').hidden=!hasDoc||hasRounds;
+  $('addButton').disabled=!hasRounds||state.busy;$('duplicateButton').disabled=!hasRounds||state.busy;
+  for(const id of ['latitude','longitude','coordinatePair','applyCoords','aliases'])$(id).disabled=!hasRounds||state.busy;
+  $('entryFields').disabled=state.busy;$('workspace').inert=state.busy;
+  for(const id of ['openButton','welcomeOpen','newSetButton','newListButton','siteButton'])$(id).disabled=state.busy;
+  $('workspace').hidden=!hasDoc;$('welcome').hidden=hasDoc;
+  $('adminTools').hidden=!server.authenticated;$('editorShell').hidden=!server.authenticated;$('authPanel').hidden=server.authenticated;
+  $('serverSave').disabled=!server.authenticated||!server.revision||!hasDoc||state.rounds===null||!state.dirty||state.busy;
+  for(const id of ['backupsButton','passwordButton','logoutButton'])$(id).disabled=state.busy;
+}
+function renderList() {
+  const list=$('locationList');list.replaceChildren();if(!state.doc)return;
+  const query=$('search').value.trim().toLocaleLowerCase(),filter=$('filter').value;
+  state.doc.locations.forEach((e,i)=>{
+    const isActive=active(e),done=complete(e);
+    if(filter==='active'&&!isActive||filter==='inactive'&&isActive||filter==='incomplete'&&done)return;
+    const hay=[e.name?.kk,e.name?.ru,e.address?.kk,e.address?.ru,...e.coordinates].join(' ').toLocaleLowerCase();if(query&&!hay.includes(query))return;
+    const b=button('',()=>select(i),'item');b.setAttribute('aria-current',String(i===state.index));b.dataset.index=String(i);
+    b.append(el('strong',title(e)));const meta=el('small');if(isActive)meta.append(el('span','● Ойында','tag'));if(!done)meta.append(el('span','Мәтіні толық емес','tag warn'));b.append(meta,el('small',e.coordinates.slice(0,2).join(', ')));list.append(b);
+  });if(!list.children.length)list.append(el('p','Локациялар табылмады.','empty-list'));
+}
+function countWords() { for(const [lang,id] of [['kk','countKk'],['ru','countRu']]){const v=document.querySelector('[data-path="description.'+lang+'"]').value.trim();const n=v?v.split(/\s+/u).length:0;$(id).textContent='Сөз саны: '+n+' · ұсыныс: 30 сөз';$(id).classList.toggle('exceeded',n>30);} }
+function updateMap() { try{const p=coord([number($('latitude').value),number($('longitude').value)]);$('mapLink').href='https://yandex.kz/maps/?ll='+encodeURIComponent(p[1]+','+p[0])+'&z=16&pt='+encodeURIComponent(p[1]+','+p[0]);$('mapLink').removeAttribute('aria-disabled');}catch{$('mapLink').removeAttribute('href');$('mapLink').setAttribute('aria-disabled','true');} }
+function fillForm() {
+  const e=entry();$('editorForm').hidden=!e;$('noSelection').hidden=!!e;state.pending=false;state.baseline={};if(!e)return;
+  $('entryNumber').textContent='ЛОКАЦИЯ '+(state.index+1);$('entryTitle').textContent=title(e);
+  $('latitude').value=e.coordinates[0];$('longitude').value=e.coordinates[1];$('coordinatePair').value='';$('active').checked=active(e);$('active').disabled=state.rounds===null;
+  for(const input of fields){const value=readPath(e,input.dataset.path)||'';input.value=value;state.baseline[input.dataset.path]=value;}
+  $('aliases').value=(e.aliases||[]).map(p=>p.join(', ')).join('\n');state.baseline.aliases=$('aliases').value;
+  const extras=Object.fromEntries(Object.entries(e).filter(([k])=>!['coordinates','aliases','name','address','description','descriptionFull','hints','dataNotes'].includes(k)));
+  $('extraData').textContent=Object.keys(extras).length?JSON.stringify(extras,null,2):'Қосымша өрістер жоқ.';
+  countWords();updateMap();
+}
+function commit() {
+  const old=entry();if(!old||!state.pending)return true;
+  try{
+    const next=clone(old);next.coordinates=coord([number($('latitude').value),number($('longitude').value),...old.coordinates.slice(2)]);
+    for(const input of fields)if(input.value!==state.baseline[input.dataset.path])writePath(next,input.dataset.path,input.value);
+    if($('aliases').value!==state.baseline.aliases){const values=parseAliases($('aliases').value);if(values.length||own(next,'aliases'))next.aliases=values;}
+    const locations=state.doc.locations.slice();locations[state.index]=next;validateDoc({...state.doc,locations});
+    const oldKeys=keys(old),newKeys=keys(next),oldPrimary=key(old.coordinates),primaryChanged=old.coordinates[0]!==next.coordinates[0]||old.coordinates[1]!==next.coordinates[1];
+    const rounds=state.rounds?.map(p=>{const k=key(p);return oldKeys.has(k)&&((k===oldPrimary&&primaryChanged)||!newKeys.has(k))?next.coordinates.slice(0,2):p;})??null;
+    state.doc.locations[state.index]=next;state.rounds=rounds;state.pending=false;
+    fields.forEach(input=>state.baseline[input.dataset.path]=input.value);state.baseline.aliases=$('aliases').value;
+    $('entryTitle').textContent=title(next);$('active').checked=active(next);renderList();updateStatus();return true;
+  }catch(e){problem(e);return false;}
+}
+function select(index) { if(!commit())return;state.index=index;fillForm();renderList(); }
+function render() { updateStatus();renderList();fillForm(); }
+function dirtyConfirm() { return !state.dirty||confirm('Серверге сақталмаған өзгерістер бар. Ағымдағы деректерді ауыстыру керек пе?'); }
+function adopt(doc,rounds) {
+  const missing=doc?addMissing(doc,rounds):0;
+  state.doc=doc;state.rounds=rounds;state.index=doc?.locations.length?0:-1;state.dirty=missing>0;state.pending=false;state.exports.clear();state.original=null;$('search').value='';$('filter').value='all';render();
+  const text=missing?missing+' ойын нүктесі анықтамалықта болмады. Оларға бос карточкалар қосылды; мәтіндерін толтырыңыз.':doc&&rounds!==null?'Екі файл ашылды. Локацияны таңдап, өңдеуді бастаңыз.':doc?'Анықтамалық ашылды. Мәтіндерді өңдеуге болады. Координаттарды өзгерту үшін locations.txt файлын ашыңыз немесе жаңа ойын тізімін жасаңыз.':'Ойын тізімі ашылды. Енді locations-info.json файлын таңдаңыз.';
+  notify(text,missing?'warning':'success');
+}
+async function importFiles(files) {
+  if(!server.authenticated||state.busy||!files.length)return;
+  try{
+    const items=[...files];if(items.length>2)throw Error('Бір JSON және бір TXT файлын таңдаңыз.');
+    const json=items.filter(f=>/\.json$/i.test(f.name)),txt=items.filter(f=>/\.txt$/i.test(f.name));
+    if(json.length>1||txt.length>1||json.length+txt.length!==items.length)throw Error('Бір JSON және бір TXT файлын таңдаңыз.');
+    if(items.some(f=>f.size>6*1024*1024))throw Error('Әр файл 6 МБ-тан аспауы керек.');
+    if(!json.length&&!commit())return;
+    if(!dirtyConfirm())return;state.busy=true;updateStatus();
+    const texts=await Promise.all(items.map(f=>f.text()));let doc=state.doc?clone(state.doc):null,rounds=state.rounds?clone(state.rounds):state.rounds;
+    items.forEach((f,i)=>{if(/\.json$/i.test(f.name))doc=parseDoc(texts[i]);else rounds=parseList(texts[i]);});
+    adopt(doc,rounds);changed();notify('Файлдар импортталды. Серверге жазу үшін «Сақтау» түймесін басыңыз.','success');
+  }catch(e){problem(e);}finally{state.busy=false;updateStatus();$('fileInput').value='';}
+}
+function openModal(title,nodes) { $('modalTitle').textContent=title;$('modalBody').replaceChildren(...nodes);if(!$('modal').open)$('modal').showModal();$('modalBody').scrollTop=0; }
+function closeModal() { $('modal').close(); }
+function preview() {
+  if(!commit()||!entry())return;const e=entry();const nodes=[];
+  for(const lang of ['kk','ru']){const s=el('section',undefined,'preview-section');s.lang=lang;s.append(el('div',lang==='kk'?'ҚАЗАҚША':'РУССКИЙ','eyebrow'),el('h3',e.name?.[lang]||'—'),el('p',(lang==='kk'?'Мекенжайы: ':'Адрес: ')+(e.address?.[lang]||'—')),el('p',e.description?.[lang]||'—'));
+    for(const [f,label] of [['region',lang==='kk'?'1-көмек':'Подсказка 1'],['settlement',lang==='kk'?'2-көмек':'Подсказка 2']])s.append(el('p',label+': '+(e.hints?.[f]?.[lang]||'—'),'preview-hint'));nodes.push(s);}
+  openModal('Анықтама мен көмектерді алдын ала көру',nodes);
+}
+function createSet() { if(!dirtyConfirm())return;adopt({version:1,locations:[]},[]);changed();addEntry(); }
+function addEntry(copy=false) {
+  if(!state.doc||!commit())return;
+  const e=copy&&entry()?clone(entry()):blank();e.coordinates=[48,68];delete e.aliases;
+  const used=validateDoc(state.doc);while(used.has(key(e.coordinates)))e.coordinates[0]=Number((e.coordinates[0]+.001).toFixed(6));
+  if(copy){for(const l of ['kk','ru'])if(typeof e.name?.[l]==='string')e.name[l]+=' (көшірме)';}
+  state.doc.locations.push(e);state.index=state.doc.locations.length-1;changed();$('search').value='';$('filter').value='all';render();
+  notify('Жаңа карточка қосылды. Үлгі координатты нақты нүктеге ауыстырыңыз. Дайын болған соң «Ойынға енгізу» белгісін қойыңыз.','warning');$('latitude').focus();
+}
+function deleteEntry() { if(!entry()||!commit())return;const e=entry();if(!confirm('«'+title(e)+'» локациясын және оған тиесілі ойын кезеңдерін жою керек пе?'))return;const set=keys(e);state.rounds=state.rounds?.filter(p=>!set.has(key(p)))??null;state.doc.locations.splice(state.index,1);state.index=Math.min(state.index,state.doc.locations.length-1);changed();render();notify('Локация редактордан жойылды. Өзгеріс «Сақтау» түймесін басқаннан кейін қолданылады.'); }
+function toggleActive() { const wanted=$('active').checked;if(!commit()||!entry()||state.rounds===null){$('active').checked=!!entry()&&active(entry());return;}const set=keys(entry());if(wanted){if(!active(entry()))state.rounds.push(entry().coordinates.slice(0,2));}else state.rounds=state.rounds.filter(p=>!set.has(key(p)));changed();renderList();updateStatus();$('active').checked=wanted; }
+function gameOrder() {
+  if(!commit()||!state.rounds)return;const nodes=[el('p','Ойын осы ретпен өтеді. ↑ және ↓ түймелері кезеңдердің орнын ауыстырады.','footnote')];const index=validateDoc(state.doc);
+  state.rounds.forEach((p,i)=>{const row=el('div',undefined,'round-row');const text=el('span');text.append(el('b',(i+1)+'. '+title(state.doc.locations[index.get(key(p))])),el('small',p.join(', ')));const actions=el('div',undefined,'toolbar');
+    const up=button('↑',()=>moveRound(i,-1),'small');up.disabled=i===0;up.setAttribute('aria-label','Кезеңді жоғары жылжыту');const down=button('↓',()=>moveRound(i,1),'small');down.disabled=i===state.rounds.length-1;down.setAttribute('aria-label','Кезеңді төмен жылжыту');
+    const remove=button('Алып тастау',()=>{state.rounds.splice(i,1);changed();render();gameOrder();},'small danger');actions.append(up,down,remove);row.append(text,actions);nodes.push(row);});openModal('Кезеңдер реті',nodes);
+}
+function moveRound(i,delta) { const j=i+delta;if(j<0||j>=state.rounds.length)return;[state.rounds[i],state.rounds[j]]=[state.rounds[j],state.rounds[i]];changed();gameOrder(); }
+function payload() {
+  if(!commit())return null;if(!state.doc)throw Error('Алдымен анықтамалықты ашыңыз.');const index=validateDoc(state.doc);
+  if(state.rounds!==null)for(const p of state.rounds)if(!index.has(key(p)))throw Error('Ойын нүктесі анықтамалықта жоқ: '+p.join(', '));
+  return {info:JSON.stringify(state.doc,null,2)+'\n',list:state.rounds===null?null:state.rounds.map(p=>p.slice(0,2).join(',')).join('\n')+'\n'};
+}
+function download(name,bytes,type) { const url=URL.createObjectURL(new Blob([bytes],{type}));const link=el('a');link.href=url;link.download=name;document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),30000); }
+// ZIP «store»: UTF-8, CRC32, local file headers + central directory. No CDN.
+const crcTable=Uint32Array.from({length:256},(_,i)=>{let c=i;for(let j=0;j<8;j++)c=(c&1)?0xedb88320^(c>>>1):c>>>1;return c>>>0;});
+function crc32(bytes){let c=0xffffffff;for(const v of bytes)c=crcTable[(c^v)&255]^(c>>>8);return(c^0xffffffff)>>>0;}
+function zip(files){const encoder=new TextEncoder(),chunks=[],directory=[];let offset=0,centralSize=0;const now=new Date(),dosTime=(now.getHours()<<11)|(now.getMinutes()<<5)|(now.getSeconds()>>1),dosDate=((Math.max(1980,now.getFullYear())-1980)<<9)|((now.getMonth()+1)<<5)|now.getDate();
+  for(const[name,text]of files){const filename=encoder.encode(name),data=encoder.encode(text),crc=crc32(data),head=new Uint8Array(30+filename.length),v=new DataView(head.buffer);v.setUint32(0,0x04034b50,true);v.setUint16(4,20,true);v.setUint16(6,0x800,true);v.setUint16(10,dosTime,true);v.setUint16(12,dosDate,true);v.setUint32(14,crc,true);v.setUint32(18,data.length,true);v.setUint32(22,data.length,true);v.setUint16(26,filename.length,true);head.set(filename,30);chunks.push(head,data);
+    const central=new Uint8Array(46+filename.length),c=new DataView(central.buffer);c.setUint32(0,0x02014b50,true);c.setUint16(4,20,true);c.setUint16(6,20,true);c.setUint16(8,0x800,true);c.setUint16(12,dosTime,true);c.setUint16(14,dosDate,true);c.setUint32(16,crc,true);c.setUint32(20,data.length,true);c.setUint32(24,data.length,true);c.setUint16(28,filename.length,true);c.setUint32(42,offset,true);central.set(filename,46);directory.push(central);centralSize+=central.length;offset+=head.length+data.length;
+  }const end=new Uint8Array(22),e=new DataView(end.buffer);e.setUint32(0,0x06054b50,true);e.setUint16(8,files.length,true);e.setUint16(10,files.length,true);e.setUint32(12,centralSize,true);e.setUint32(16,offset,true);return new Blob([...chunks,...directory,end],{type:'application/zip'});}
+function markExport(kind){state.exports.add(kind);updateStatus();}
+function exportData(kind){try{const p=payload();if(!p)return;if(kind!=='info'&&(state.rounds===null||!state.rounds.length))throw Error('locations.txt ашып, ойынға кемінде бір локацияны енгізіңіз.');
+    if(kind==='zip'){download('NomadQuest-data.zip',zip([['locations-info.json',p.info],['locations.txt',p.list]]),'application/zip');markExport('info');markExport('list');}
+    else if(kind==='info'){download('locations-info.json',p.info,'application/json;charset=utf-8');markExport('info');}
+    else{download('locations.txt',p.list,'text/plain;charset=utf-8');markExport('list');}
+    closeModal();notify('Көшірме жүктеуге дайындалды. Бұл серверге сақтау емес; өзгерістерді қолдану үшін «Сақтау» түймесін басыңыз.','success');
+  }catch(e){closeModal();problem(e);}}
+function exportDialog(){try{const p=payload();if(!p)return;const nodes=[el('p','Жергілікті көшірме үшін ZIP архивін таңдаңыз. Серверге өзгерістерді жазу негізгі беттегі «Сақтау» түймесі арқылы орындалады.')];
+  const incomplete=state.doc.locations.filter(e=>!complete(e)).length;if(incomplete)nodes.push(el('p',incomplete+' локацияның кейбір мәтіні толық емес. Мұндай көмек ойында қолжетімсіз болуы мүмкін.','notice warning'));
+  if(state.rounds===null)nodes.push(el('p','TXT файлы ашылмаған. Қазір тек JSON файлын жүктеуге болады.','notice warning'));
+  else if(!state.rounds.length)nodes.push(el('p','Ойын тізімі бос. ZIP немесе TXT жүктеу үшін кемінде бір локацияны ойынға енгізіңіз.','notice warning'));
+  const options=el('div',undefined,'export-options'),all=button('↓ Екі файл · ZIP архиві',()=>exportData('zip'),'primary');all.disabled=!state.rounds?.length;const txt=button('Тек locations.txt',()=>exportData('list'));txt.disabled=!state.rounds?.length;options.append(all,button('Тек locations-info.json',()=>exportData('info')),txt);nodes.push(options);openModal('Жаңартылған файлдарды жүктеу',nodes);
+}catch(e){problem(e);}}
+async function api(action, body, params = {}) {
+  const url = new URL('./admin-api.php', location.href);
+  url.searchParams.set('action', action);
+  for (const [name, value] of Object.entries(params)) url.searchParams.set(name, value);
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 30000);
+  try {
+    const options = {credentials:'same-origin', cache:'no-store', signal:controller.signal};
+    if (body !== undefined) Object.assign(options, {method:'POST', headers:{'Content-Type':'application/json', 'X-CSRF-Token':server.csrf}, body:JSON.stringify(body)});
+    const response = await fetch(url, options);
+    const text = await response.text();
+    let data;
+    try { data = JSON.parse(text); } catch { throw Error('Сервер JSON жауабын қайтармады. admin-api.php және admin-config.php файлдарын жүктеп, хостингте PHP қосылғанын тексеріңіз.'); }
+    if (!isObject(data)) throw Error('Сервер жауабының пішімі дұрыс емес.');
+    if (typeof data.csrf === 'string') server.csrf = data.csrf;
+    if (!response.ok) {
+      const error = Error(data.error || 'Сервер қатесі: ' + response.status);
+      error.status = response.status;
+      if ((response.status === 401 || response.status === 403) && server.authenticated) showLogin('Сессия аяқталды. Қайта кіріңіз. Енгізілген өзгерістер осы бетте сақталды.');
+      throw error;
+    }
+    return data;
+  } catch (error) {
+    if (error.name === 'AbortError' || error instanceof TypeError) {
+      throw Error(action === 'save'
+        ? 'Сақтаудың орындалғаны расталмады: байланыс үзілді немесе уақыт аяқталды. Өз нұсқаңыздың көшірмесін жүктеп алып, «Серверден оқу» арқылы нәтижені тексеріңіз.'
+        : 'Сервермен байланыс орнатылмады. Интернетті тексеріп, қайталап көріңіз.');
+    }
+    throw error;
+  } finally { clearTimeout(timer); }
+}
+function showLogin(message = '') {
+  server.authenticated = false;
+  const setup = server.needsSetup;
+  $('authTitle').textContent = setup ? 'Алғашқы баптау' : 'Админкаға кіру';
+  $('authDescription').textContent = setup ? 'INSTALL.txt файлындағы белсендіру кодын енгізіп, өз құпиясөзіңізді орнатыңыз.' : 'Локацияларды өңдеу үшін құпиясөзді енгізіңіз.';
+  $('setupCodeField').hidden = !setup; $('setupCode').required = setup;
+  $('confirmField').hidden = !setup; $('authConfirm').required = setup;
+  $('passwordLabel').textContent = setup ? 'Жаңа құпиясөз (кемінде 10 таңба)' : 'Құпиясөз';
+  $('authPassword').minLength = setup ? 10 : 1;
+  $('authPassword').autocomplete = setup ? 'new-password' : 'current-password';
+  $('authPassword').value = ''; $('authConfirm').value = '';
+  $('authSubmit').textContent = setup ? 'Құпиясөзді орнату' : 'Кіру';
+  $('authSubmit').disabled = !server.csrf || server.authBusy;
+  $('authMessage').textContent = message;
+  $('authMessage').hidden = !message;
+  closeModal(); updateStatus();
+}
+async function bootServer() {
+  if (!/^https?:$/.test(location.protocol)) {
+    showLogin('Бұл нұсқа серверде жұмыс істейді. upload қапшығындағы үш файлды сайтқа жүктеп, admin.html бетін HTTPS мекенжайы арқылы ашыңыз.');
+    return;
+  }
+  try {
+    const data = await api('status');
+    server.needsSetup = data.needsSetup === true;
+    server.authenticated = data.authenticated === true;
+    if (server.authenticated) { updateStatus(); await loadSite(false); }
+    else showLogin();
+  } catch (error) { showLogin(error.message); }
+}
+async function submitAuth(event) {
+  event.preventDefault();
+  if (server.authBusy || !$('authForm').reportValidity()) return;
+  const wantedSetup = server.needsSetup;
+  const values = {code:$('setupCode').value.trim(), password:$('authPassword').value, confirm:$('authConfirm').value};
+  server.authBusy = true; $('authSubmit').disabled = true;
+  $('authMessage').hidden = false; $('authMessage').textContent = 'Тексерілуде…';
+  try {
+    // Refresh the CSRF token when a previous PHP session has expired.
+    const status = await api('status');
+    server.needsSetup = status.needsSetup === true;
+    if (server.needsSetup !== wantedSetup) { showLogin('Кіру күйі өзгерді. Деректерді қайта енгізіңіз.'); return; }
+    const data = await api(wantedSetup ? 'setup' : 'login', values);
+    if (data.authenticated !== true) throw Error('Кіру расталмады. Қайталап көріңіз.');
+    server.authenticated = true; server.needsSetup = false;
+    $('setupCode').value = ''; $('authPassword').value = ''; $('authConfirm').value = '';
+    updateStatus();
+    if (state.doc && server.revision) notify('Қайта кірдіңіз. Енгізілген өзгерістер сақталды; жұмысты жалғастырыңыз.', 'success');
+    else await loadSite(false);
+  } catch (error) { $('authMessage').textContent = error.message; $('authMessage').hidden = false; }
+  finally { server.authBusy = false; $('authSubmit').disabled = !server.csrf; }
+}
+function adoptServer(data) {
+  if (typeof data.revision !== 'string' || !Array.isArray(data.rounds)) throw Error('Сервер деректері толық емес.');
+  validateDoc(data.document); data.rounds.forEach(p => coord(p));
+  adopt(data.document, data.rounds); server.revision = data.revision;
+}
+async function loadSite(prompt = true) {
+  if (!server.authenticated || state.busy || (prompt && !dirtyConfirm())) return;
+  state.busy = true; updateStatus();
+  try { adoptServer(await api('load')); }
+  catch (error) { problem(error); }
+  finally { state.busy = false; updateStatus(); }
+}
+async function saveServer() {
+  if (!server.authenticated || state.busy || !state.dirty) return;
+  try {
+    if (!server.revision) throw Error('Алдымен «Серверден оқу» түймесін басыңыз.');
+    if (!payload()) return;
+    if (!state.rounds?.length) throw Error('Ойынға кемінде бір локация енгізіңіз.');
+    state.busy = true; updateStatus(); $('saveState').textContent = 'Серверге сақталуда…';
+    const data = await api('save', {document:state.doc, rounds:state.rounds, revision:server.revision});
+    if (typeof data.revision !== 'string') throw Error('Сақтау расталмады. Өз көшірмеңізді жүктеп алып, сервердегі деректерді тексеріңіз.');
+    server.revision = data.revision; state.dirty = false; state.exports.clear();
+    notify('Сақталды. locations-info.json және locations.txt серверде жаңартылды. Алдыңғы нұсқаның резервтік көшірмесі жасалды. Ойын бетін қайта ашыңыз.', 'success');
+  } catch (error) { problem(error); }
+  finally { state.busy = false; updateStatus(); }
+}
+async function logout() {
+  if (!server.authenticated || state.busy || (state.dirty && !confirm('Сақталмаған өзгерістер жоғалады. Шығу керек пе?'))) return;
+  state.busy = true; updateStatus();
+  try {
+    await api('logout', {});
+    state.doc = null; state.rounds = null; state.index = -1; state.dirty = false; state.pending = false;
+    server.revision = null; server.csrf = ''; server.authenticated = false;
+    state.busy = false; await bootServer();
+  } catch (error) { problem(error); }
+  finally { state.busy = false; updateStatus(); }
+}
+function passwordDialog() {
+  if (!server.authenticated || state.busy) return;
+  const form = el('form'), inputs = {}, message = el('p', '', 'notice');
+  message.setAttribute('role', 'status'); message.hidden = true;
+  for (const [name, label] of [['current','Қазіргі құпиясөз'], ['password','Жаңа құпиясөз (кемінде 10 таңба)'], ['confirm','Жаңа құпиясөзді қайталаңыз']]) {
+    const field = el('label', undefined, 'field'), input = el('input');
+    input.type = 'password'; input.required = true; input.name = name;
+    input.autocomplete = name === 'current' ? 'current-password' : 'new-password';
+    if (name !== 'current') input.minLength = 10;
+    field.append(el('span', label), input); inputs[name] = input; form.append(field);
+  }
+  const submit = el('button', 'Құпиясөзді өзгерту', 'primary'); submit.type = 'submit'; form.append(message, submit);
+  form.addEventListener('submit', async event => {
+    event.preventDefault(); if (submit.disabled || !form.reportValidity()) return;
+    submit.disabled = true; state.busy = true; updateStatus(); message.hidden = true;
+    try {
+      await api('password', Object.fromEntries(Object.entries(inputs).map(([k, v]) => [k, v.value])));
+      Object.values(inputs).forEach(input => input.value = ''); closeModal();
+      notify('Құпиясөз өзгертілді. Басқа құрылғыларда қайта кіру қажет.', 'success');
+    } catch (error) { message.textContent = error.message; message.hidden = false; }
+    finally { submit.disabled = false; state.busy = false; updateStatus(); }
+  });
+  openModal('Құпиясөзді өзгерту', [form]); inputs.current.focus();
+}
+async function backupsDialog() {
+  if (!server.authenticated || state.busy) return;
+  state.busy = true; updateStatus();
+  try {
+    const data = await api('backups');
+    if (!Array.isArray(data.backups)) throw Error('Көшірмелер тізімі дұрыс емес.');
+    const nodes = [el('p','Әр көшірмеде сақтау алдындағы екі файл бар. «Ашу» оны редакторға жүктейді. Сервердегі деректерді ауыстыру үшін кейін «Сақтау» түймесін басыңыз.')];
+    if (!data.backups.length) nodes.push(el('p','Әзірге резервтік көшірме жоқ.'));
+    for (const record of data.backups) {
+      const row = el('div', undefined, 'round-row'), label = el('span');
+      const date = new Date(record.date);
+      label.append(el('b',Number.isNaN(date.getTime()) ? record.id : date.toLocaleString('kk-KZ')), el('small', record.id));
+      row.append(label, button('Ашу', () => openBackup(record.id), 'small')); nodes.push(row);
+    }
+    openModal('Резервтік көшірмелер', nodes);
+  } catch (error) { problem(error); }
+  finally { state.busy = false; updateStatus(); }
+}
+async function openBackup(id) {
+  if (!server.authenticated || state.busy || !dirtyConfirm()) return;
+  state.busy = true; updateStatus();
+  try {
+    adoptServer(await api('backup', undefined, {id})); changed(); closeModal();
+    notify('Резервтік көшірме редакторға ашылды. Тексеріп, «Сақтау» түймесін басыңыз. Сервердегі файлдар әзірге өзгерген жоқ.', 'warning');
+  } catch (error) { closeModal(); problem(error); }
+  finally { state.busy = false; updateStatus(); }
+}
+$('authForm').addEventListener('submit', submitAuth);
+$('serverSave').addEventListener('click', saveServer);
+$('logoutButton').addEventListener('click', logout);
+$('passwordButton').addEventListener('click', passwordDialog);
+$('backupsButton').addEventListener('click', backupsDialog);
+
+function help(){openModal('Админканы пайдалану',[
+  el('p','1. Құпиясөзбен кіріңіз. Сервердегі анықтамалық пен ойын тізімі автоматты түрде ашылады.'),
+  el('p','2. Локацияны таңдап, координаттарды және қазақша/орысша мәтіндерді өзгертіңіз. «Ойынға енгізу» белгісі оның ойын тізіміне қатысуын анықтайды.'),
+  el('p','3. «Алдын ала көру» арқылы анықтама мен көмектерді тексеріңіз. Бұл панораманың қолжетімділігін тексермейді.'),
+  el('p','4. «Сақтау» екі файлды серверде жаңартады. Нәтиже туралы хабарлама шыққанша күтіңіз. Жаңартылған деректерді көру үшін ойын бетін қайта ашыңыз.'),
+  el('p','5. «Резервтік көшірмелер» бұрынғы нұсқаны редакторға ашады. Оны тексеріп, «Сақтау» арқылы қалпына келтіруге болады.'),
+  el('p','6. «Көшірме жүктеу» файлдарды компьютерге жүктейді. Ол сервердегі өзгерістерді сақтамайды.'),
+  el('p','Басқа вкладкадағы өзгерістер анықталса, сервер сақтауды тоқтатады. Өз нұсқаңызды жүктеп алып, сервердегі деректерді қайта оқыңыз. Көмек, анықтама және өзге өрістер сақталады.','footnote')
+]);}
+$('fileInput').addEventListener('change',e=>importFiles(e.target.files));for(const id of ['openButton','welcomeOpen'])$(id).addEventListener('click',()=>$('fileInput').click());
+$('newSetButton').addEventListener('click',createSet);$('newListButton').addEventListener('click',()=>{if(!commit())return;if(!confirm('Бос ойын тізімін жасау керек пе? Кейін локацияларды «Ойынға енгізу» белгісімен таңдаңыз.'))return;state.rounds=[];changed();render();});
+$('search').addEventListener('input',renderList);$('filter').addEventListener('change',renderList);$('addButton').addEventListener('click',()=>addEntry());$('duplicateButton').addEventListener('click',()=>addEntry(true));$('deleteButton').addEventListener('click',deleteEntry);$('active').addEventListener('change',toggleActive);
+$('editorForm').addEventListener('submit',e=>e.preventDefault());$('entryFields').addEventListener('input',e=>{if(e.target.id==='active'||e.target.id==='coordinatePair')return;state.pending=true;changed();countWords();updateMap();});
+$('applyCoords').addEventListener('click',()=>{try{const parts=$('coordinatePair').value.trim().split(',');if(parts.length!==2)throw Error('Екі координатты үтірмен бөліңіз: 51.314597, 72.784992');const p=coord(parts.map(number));$('latitude').value=p[0];$('longitude').value=p[1];state.pending=true;changed();if(commit())updateMap();}catch(e){problem(e);}});
+$('previewButton').addEventListener('click',preview);$('orderButton').addEventListener('click',gameOrder);$('exportButton').addEventListener('click',exportDialog);$('helpButton').addEventListener('click',help);$('closeModal').addEventListener('click',closeModal);$('modalDone').addEventListener('click',closeModal);
+$('siteButton').hidden=false;$('siteButton').addEventListener('click',()=>loadSite(true));
+window.addEventListener('beforeunload',e=>{if(state.dirty){e.preventDefault();e.returnValue='';}});
+window.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='s'){e.preventDefault();saveServer();}});
+let dragDepth=0;document.addEventListener('dragenter',e=>{if([...e.dataTransfer.types].includes('Files')){e.preventDefault();dragDepth++;document.body.classList.add('dropover');}});document.addEventListener('dragover',e=>{if([...e.dataTransfer.types].includes('Files'))e.preventDefault();});document.addEventListener('dragleave',()=>{if(--dragDepth<=0){dragDepth=0;document.body.classList.remove('dropover');}});document.addEventListener('drop',e=>{if(e.dataTransfer.files.length){e.preventDefault();dragDepth=0;document.body.classList.remove('dropover');importFiles(e.dataTransfer.files);}});
+updateStatus();
+bootServer();
+</script>
+</body>
+</html>
